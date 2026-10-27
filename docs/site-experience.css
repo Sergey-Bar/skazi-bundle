@@ -190,3 +190,29 @@ footer .wrap{font-size:12px}
 .info-close:focus-visible,.lb-close:focus-visible{outline:2px solid var(--acid);outline-offset:3px}
 .lb-close{top:20px;right:20px;z-index:2}
 @media(max-width:600px){.info-topline{gap:16px;padding:14px}.lb-close{top:14px;right:14px}}
+/* Accessibility follow-up: opt-in sound, readable accents and a shorter mobile hero. */
+:root{--accent-text:#ff7373}
+.hero-sound-toggle{position:absolute;z-index:8;top:18px;right:18px;min-height:44px;padding:10px 16px;border:1px solid #777;border-radius:999px;background:#171717;color:#f5f5f5;font:600 12px/1.5 Inter,sans-serif;letter-spacing:.025em;cursor:pointer}
+.hero-sound-toggle[aria-pressed="true"]{border-color:#ff7373;color:#ff7373}
+.explore-plugins{display:inline-flex;align-items:center;gap:16px;min-height:44px;margin:0 0 4px;padding:8px 3px;color:#f2f2f2;font:600 14px/1.5 Inter,sans-serif;text-decoration:underline;text-underline-offset:5px}
+.explore-plugins span{color:#ff7373;font-size:21px}
+#plugins:focus{outline:none}
+#plugins .film-gallery[data-view="grid"] .badge{color:#ff9292;background:#171717;opacity:1;border-color:#5b3838;font-size:11px}
+#plugins .film-gallery[data-view="grid"] .badge.fx{color:#b8dfff}
+#plugins h3 em,.info-topline,.hero-info-trigger:hover,.free-label{color:var(--accent-text)}
+.artist-shot[data-active="skazi"] .persona-zone-skazi .persona-caption b,.artist-shot[data-active="asher"] .persona-zone-asher .persona-caption b{color:var(--accent-text)}
+.persona-caption small{font-size:11px;color:#eee;letter-spacing:.025em;text-shadow:0 1px 4px #000}
+.hero-info-panel{background:#101010;scroll-margin-top:16px}.info-shell{border-radius:24px;overflow:hidden}.info-panel .step,.info-panel .box{border-radius:18px}
+.info-topline{font-size:12px;letter-spacing:.07em}.film-details summary{font-size:13px}.film-count{font-size:13px}
+#plugins .film-gallery[data-view="reel"] .pic{border-radius:18px}
+@media(max-width:700px){
+ .hero{padding-top:16px;padding-bottom:12px}.hero .wrap{gap:12px}
+ .hero h1.hero-logo{max-width:280px;margin:0 0 16px}.hero .lead{font-size:14px;line-height:1.65}
+ .hero .ctas{margin:20px 0 10px}.hero .artist-shot{height:300px}
+ .hero .artist-image{object-position:50% 22%}.hero-sound-toggle{top:10px;right:10px;font-size:11px;padding-inline:12px}
+ .persona-zone{padding:16px 10px}.persona-caption small{font-size:11px;line-height:1.4;letter-spacing:0;max-width:150px}
+ .persona-caption b,.persona-zone-asher .persona-caption b{font-size:21px}
+ .daw-compat{margin-top:10px}.hero-info-trigger{margin-top:14px}
+ .stat{padding:18px 8px}.stats .stat b{font-size:27px}#plugins{padding-top:32px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.hero-sound-toggle,.explore-plugins{transition:none}.intro-pending #site-intro .intro-halo{display:none}}

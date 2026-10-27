@@ -3,50 +3,65 @@
   window.initSiteExperience = function () {
     const audio=document.getElementById('site-audio');
     const artist=document.getElementById('artist-shot');
-    const status=document.getElementById('sound-status');
-    const unlock=document.querySelector('.audio-unlock');
+    const status=document.getElementById('artist-audio-status');
+    const soundButton=document.getElementById('hero-sound-toggle');
     const gallery=document.querySelector('.film-gallery');
     const cards=[...gallery.querySelectorAll('.card')];
+    const zones=[...artist.querySelectorAll('[data-persona]')];
     const tracks={skazi:{name:'SKAZI · JUNAM',src:'audio/skazi-junam.mp3'},asher:{name:'ASHER SWISSA · IMANI',src:'audio/asher-imani.mp3'}};
-    let target=null,token=0,blocked=false;
+    let enabled=false,target=null,token=0;
     audio.volume=.75;
-    function clearVisuals(){artist.classList.remove('is-playing');cards.forEach(card=>card.classList.remove('is-previewing'));}
-    function stop(){++token;audio.pause();target=null;clearVisuals();}
-    async function play(next){
-      if(document.hidden)return;
-      if(target?.key===next.key&&!audio.paused)return;
-      stop();target=next;const request=++token;
-      const url=new URL(next.src,document.baseURI).href;
+    function stop(){++token;audio.pause();target=null;artist.classList.remove('is-playing');zones.forEach(z=>z.setAttribute('aria-pressed','false'));}
+    function setEnabled(value){
+      enabled=value;soundButton.setAttribute('aria-pressed',String(value));
+      soundButton.textContent=value?'SOUND ON · MUTE':'SOUND OFF · ENABLE';
+      if(!value){stop();status.textContent='Artist previews muted.';}
+    }
+    async function play(persona){
+      if(!enabled||document.hidden)return;
+      if(target===persona&&!audio.paused)return;
+      stop();target=persona;const request=++token;
+      const track=tracks[persona];
+      const url=new URL(track.src,document.baseURI).href;
       if(audio.src!==url)audio.src=url;
       else {try{audio.currentTime=0;}catch{}}
       try{
         await audio.play();
         if(request!==token)return;
-        blocked=false;unlock.hidden=true;
-        if(next.card)next.card.classList.add('is-previewing');else artist.classList.add('is-playing');
-        status.textContent=`Playing ${next.name}`;
+        artist.classList.add('is-playing');
+        zones.find(z=>z.dataset.persona===persona)?.setAttribute('aria-pressed','true');
+        status.textContent=`Playing ${track.name}. Use Sound On to mute.`;
       }catch(error){
         if(request!==token)return;
-        clearVisuals();
-        if(error.name==='NotAllowedError'){blocked=true;unlock.hidden=false;status.textContent='Enable sound once, then previews play automatically.';}
-        else if(error.name!=='AbortError')status.textContent='This audio preview is unavailable.';
+        setEnabled(false);
+        status.textContent=error.name==='NotAllowedError'?'Playback was blocked. Activate Enable sound to retry.':'This audio preview is unavailable.';
       }
     }
-    function retry(){if(blocked&&target){const next=target;play(next);}else if(navigator.userActivation?.hasBeenActive){blocked=false;unlock.hidden=true;}}
-    // Hover requests playback directly. A genuine page interaction retries a
-    // browser-blocked request; the UI never claims to bypass autoplay policy.
-    document.addEventListener('pointerup',retry);
-    document.addEventListener('keydown',retry);
-    unlock.addEventListener('click',()=>{blocked=false;unlock.hidden=true;if(target)play(target);});
-    artist.querySelectorAll('[data-persona]').forEach(zone=>{
+    soundButton.addEventListener('click',()=>{
+      setEnabled(!enabled);
+      if(enabled)play(artist.dataset.active||'skazi');
+    });
+    zones.forEach(zone=>{
       const persona=zone.dataset.persona;
-      const enter=()=>{artist.dataset.active=persona;play({key:persona,...tracks[persona]});};
-      const leave=()=>{artist.dataset.active='';if(target?.key===persona)stop();};
-      zone.addEventListener('pointerenter',enter);
-      zone.addEventListener('pointerleave',leave);
-      zone.addEventListener('focus',enter);
-      zone.addEventListener('blur',leave);
-      zone.addEventListener('click',enter);
+      zone.setAttribute('aria-pressed','false');
+      zone.addEventListener('pointerenter',event=>{
+        artist.dataset.active=persona;
+        if(event.pointerType!=='touch')play(persona);
+      });
+      zone.addEventListener('pointerleave',()=>{
+        artist.dataset.active='';
+        if(target===persona)stop();
+      });
+      // Focus highlights the identity without unexpectedly starting audio.
+      zone.addEventListener('focus',()=>{artist.dataset.active=persona;});
+      zone.addEventListener('blur',()=>{artist.dataset.active='';});
+      zone.addEventListener('click',()=>{
+        if(target===persona&&!audio.paused){stop();return;}
+        setEnabled(true);artist.dataset.active=persona;play(persona);
+      });
+    });
+    document.querySelector('.explore-plugins').addEventListener('click',()=>{
+      stop();document.getElementById('plugins').focus({preventScroll:true});
     });
     cards.forEach(card=>{
       const reduced=matchMedia('(prefers-reduced-motion: reduce)');
@@ -61,7 +76,7 @@
       });
       card.addEventListener('pointerleave',()=>{card.style.setProperty('--tilt-x','0deg');card.style.setProperty('--tilt-y','0deg');});
     });
-    audio.addEventListener('ended',clearVisuals);
+    audio.addEventListener('ended',()=>{stop();status.textContent='Artist preview finished.';});
     document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
 
     const overlay=document.getElementById('site-intro');

@@ -310,6 +310,7 @@
           <span class="download-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.6 12.8c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.8-3.7.8-.7 0-1.9-.8-3.2-.8-1.6 0-3.1 1-4 2.5-1.7 3-.5 7.3 1.2 9.7.8 1.1 1.7 2.4 2.9 2.4s1.6-.8 3.1-.8 1.8.8 3.1.8 2.1-1.1 2.8-2.3c.8-1.3 1.2-2.6 1.3-2.7-.1 0-2.1-.8-2.1-4zM14.2 5.9c.7-.8 1.1-1.8 1-2.9-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.7-1 2.8 1 .1 2-.5 2.7-1.3z"/></svg></span>
           <span class="txt">Mac</span><span class="download-arrow" aria-hidden="true">↓</span></a>
       </div>
+      <a class="explore-plugins" href="#plugins">Explore the plugins <span aria-hidden="true">↓</span></a>
       <div class="daw-compat" aria-label="Works with Cubase, Ableton Live, FL Studio, Logic Pro, Bitwig Studio, Studio One and Reaper">
         <span class="daw-label">WORKS WITH</span>
         <ul class="daw-icons">
@@ -325,12 +326,13 @@
       <button class="hero-info-trigger" type="button" aria-controls="hero-info-panel" aria-expanded="false" data-open-guide>INSTALL · SYSTEM REQUIREMENTS · FAQ</button>
     </div>
     <div class="artist-shot" id="artist-shot" data-active="" role="group" aria-label="Choose a musical identity">
-      <img src="img/skazi-artist.png" alt="" class="artist-image artist-image-mono" aria-hidden="true">
-      <img src="img/skazi-artist.png" alt="" class="artist-image artist-image-color" aria-hidden="true">
+      <img src="img/skazi-artist-640.webp" srcset="img/skazi-artist-640.webp 640w, img/skazi-artist-1280.webp 1280w" sizes="(max-width:700px) 100vw, 50vw" width="1024" height="1280" alt="" class="artist-image artist-image-mono" aria-hidden="true">
+      <img src="img/skazi-artist-640.webp" srcset="img/skazi-artist-640.webp 640w, img/skazi-artist-1280.webp 1280w" sizes="(max-width:700px) 100vw, 50vw" width="1024" height="1280" alt="" class="artist-image artist-image-color" aria-hidden="true">
+      <button id="hero-sound-toggle" class="hero-sound-toggle" type="button" aria-pressed="false" aria-controls="site-audio">SOUND OFF · ENABLE</button>
       <div class="persona-divider" aria-hidden="true"></div>
       <div class="signal-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-      <button class="persona-zone persona-zone-skazi" type="button" data-persona="skazi" aria-label="SKAZI, Psychedelic Trance and Full-On. Preview the track."><span class="persona-caption"><b>SKAZI</b><small>PSYCHEDELIC TRANCE · FULL-ON</small></span></button>
-      <button class="persona-zone persona-zone-asher" type="button" data-persona="asher" aria-label="Asher Swissa, Melodic Techno and Progressive House. Preview the track."><span class="persona-caption"><b>ASHER SWISSA</b><small>MELODIC TECHNO · PROGRESSIVE HOUSE</small></span></button>
+      <button class="persona-zone persona-zone-skazi" type="button" data-persona="skazi" aria-label="SKAZI, Psychedelic Trance and Full-On. Play or pause the track."><span class="persona-caption"><b>SKAZI</b><small>PSYCHEDELIC TRANCE · FULL-ON</small></span></button>
+      <button class="persona-zone persona-zone-asher" type="button" data-persona="asher" aria-label="Asher Swissa, Melodic Techno and Progressive House. Play or pause the track."><span class="persona-caption"><b>ASHER SWISSA</b><small>MELODIC TECHNO · PROGRESSIVE HOUSE</small></span></button>
     </div>
   </div>
 </header>
@@ -369,89 +371,89 @@
 </div>
 
 
-<section id="plugins">
+<section id="plugins" tabindex="-1" aria-labelledby="plugins-title">
   <div class="wrap">
     <div class="head">
-      <h2>WHAT'S INSIDE</h2>
+      <h2 id="plugins-title">WHAT'S INSIDE</h2>
       <p>15 instruments &amp; effects. Find your sound.</p>
       <div class="gallery-view" role="group" aria-label="Gallery layout"><button type="button" data-gallery-view="grid" aria-pressed="true">GRID</button><button type="button" data-gallery-view="reel" aria-pressed="false">REEL</button></div>
-      <span class="sound-status" id="sound-status" aria-live="polite"></span>
+
     </div>
     <div class="film-gallery" aria-label="SKAZI plugin collection">
     <div class="film-viewport">
     <div class="grid" id="plugin-reel">
 
-      <article class="card" data-preview="wide"><div class="pic"><span class="badge inst">New · Instrument</span><img src="img/bully.png?v=3" alt="BULLY" class="zoom" loading="lazy"></div>
+      <article class="card" data-preview="wide"><div class="pic"><span class="badge inst">New · Instrument</span><img src="img/bully-480.webp" srcset="img/bully-480.webp 480w, img/bully-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/bully.png?v=3" width="1548" height="886" alt="BULLY" class="zoom" loading="lazy"></div>
         <div class="body"><h3>BUL<em>LY</em></h3><div class="sub">Analog-character wavetable monster</div>
           <p>Three wavetable oscillators, analog drift and a saturated ladder filter. Shape your sound with drag-and-drop modulation, chaos generators and a full FX rack.</p>
           <div class="chips"><span class="chip hot">462 presets</span><span class="chip">SHARP 24 filter</span><span class="chip">FULL RANDOM</span><span class="chip">Drag &amp; drop mod</span><span class="chip">Chaos LFOs</span><span class="chip">Psy · Afro · Growl</span></div><details class="card-changelog"><summary>Changelog</summary><p>New SHARP 24 filter: a strong resonant ladder whose cutoff sits right where the knob says.</p></details></div></article>
 
-      <article class="card" data-preview="psy"><div class="pic"><span class="badge inst">Instrument</span><img src="img/skazi.png?v=5" alt="SKAZI" class="zoom" loading="lazy"></div>
+      <article class="card" data-preview="psy"><div class="pic"><span class="badge inst">Instrument</span><img src="img/skazi-480.webp" srcset="img/skazi-480.webp 480w, img/skazi-960.webp 670w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/skazi.png?v=5" width="670" height="500" alt="SKAZI" class="zoom" loading="lazy"></div>
         <div class="body"><h3>SKA<em>ZI</em></h3><div class="sub">Psy / acid / VA synth</div>
           <p>Supersaw unison, custom wavetables and a powerful sequencer. Perform with four macros, A/B morph and kick ducking, or roll a completely new sound.</p>
           <div class="chips"><span class="chip hot">3,650 presets</span><span class="chip">Supersaw</span><span class="chip">PERFORM page</span><span class="chip">Your own wavetables</span><span class="chip">Arp + sequencer</span></div><details class="card-changelog"><summary>Changelog</summary><p>Virus-style supersaw, PERFORM page with macros and A/B morph, your own wavetables, RANDOM that rolls every section, 3,650 presets, and a Cubase crash fix.</p></details></div></article>
 
-      <article class="card" data-preview="riser"><div class="pic"><span class="badge inst">Instrument</span><img src="img/bamba.png?v=4" alt="BAMBA" class="zoom" loading="lazy"></div>
+      <article class="card" data-preview="riser"><div class="pic"><span class="badge inst">Instrument</span><img src="img/bamba-480.webp" srcset="img/bamba-480.webp 480w, img/bamba-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/bamba.png?v=4" width="1252" height="931" alt="BAMBA" class="zoom" loading="lazy"></div>
         <div class="body"><h3>BAM<em>BA</em></h3><div class="sub">Riser & uplift maker</div>
           <p>Create uplifters, snare rolls, impacts and sub drops across 1–24 bars. Layer your samples, automate the roll rate and build the tension.</p>
           <div class="chips"><span class="chip hot">260 presets</span><span class="chip">Your Splice risers</span><span class="chip">Quantized rolls</span><span class="chip">Up to 24 bars</span><span class="chip">+6 octaves</span></div><details class="card-changelog"><summary>Changelog</summary><p>Layer your own Splice risers, rolls quantized from 1/2 to 1/128 with a RATE knob, pitch up to 6 octaves, 1 to 24 bars, 260 presets.</p></details></div></article>
 
-      <article class="card" data-preview="echo"><div class="pic"><span class="badge fx">Effect</span><img src="img/tahini.png?v=4" alt="TAHINI" class="zoom" loading="lazy"></div>
+      <article class="card" data-preview="echo"><div class="pic"><span class="badge fx">Effect</span><img src="img/tahini-480.webp" srcset="img/tahini-480.webp 480w, img/tahini-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/tahini.png?v=4" width="1252" height="900" alt="TAHINI" class="zoom" loading="lazy"></div>
         <div class="body"><h3>TAH<em>INI</em></h3><div class="sub">Space delay + reverb</div>
           <p>Seven delay characters with filtered, driven and pitch-shifted repeats. Add shimmer, reverse, freeze and a spacious ducking reverb.</p>
           <div class="chips"><span class="chip hot">250 presets</span><span class="chip">7 delay types</span><span class="chip">Echo filter + drive</span><span class="chip">Pitch on repeats</span><span class="chip">Freeze</span></div><details class="card-changelog"><summary>Changelog</summary><p>7 delay types, resonant low and high cut plus drive inside the echoes, pitch on the repeats up to 24 semitones, 250 presets.</p></details></div></article>
 
-      <article class="card" data-preview="acid"><div class="pic"><span class="badge inst">New · Instrument</span><img src="img/tbon303.png?v=1" alt="TBON 303" class="zoom" loading="lazy"></div>
+      <article class="card" data-preview="acid"><div class="pic"><span class="badge inst">New · Instrument</span><img src="img/tbon303-480.webp" srcset="img/tbon303-480.webp 480w, img/tbon303-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/tbon303.png?v=1" width="1210" height="568" alt="TBON 303" class="zoom" loading="lazy"></div>
         <div class="body"><h3>TBON <em>303</em></h3><div class="sub">Acid bass line synth · by Asher Swissa</div>
           <p>Classic acid movement with accent, slide and a powerful resonant filter. Build patterns in the sequencer and push fourteen drive flavours.</p>
           <div class="chips"><span class="chip hot">544 presets</span><span class="chip">Hard acid</span><span class="chip">Accent + slide</span><span class="chip">14 drive types</span><span class="chip">Acid sequencer</span><span class="chip">Win + Mac · VST3 / AU</span></div><details class="card-changelog"><summary>Changelog</summary><p>Harder filter with screaming resonance, 32 HARD ACID presets (544 in total), and a fix for a Cubase freeze when changing presets.</p></details></div></article>
 
-      <article class="card" data-preview="stutter"><div class="pic"><span class="badge fx">New · Effect</span><img src="img/salat.png?v=2" alt="SALAT" class="zoom" loading="lazy"></div>
+      <article class="card" data-preview="stutter"><div class="pic"><span class="badge fx">New · Effect</span><img src="img/salat-480.webp" srcset="img/salat-480.webp 480w, img/salat-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/salat.png?v=2" width="1200" height="680" alt="SALAT" class="zoom" loading="lazy"></div>
         <div class="body"><h3>SA<em>LAT</em></h3><div class="sub">Glitch multi-FX + RISE</div>
           <p>Rearrange your groove with synced chops, stutters and tape stops. Add a full FX chain and use RISE for long, tempo-locked pitch builds.</p>
           <div class="chips"><span class="chip hot">104 presets</span><span class="chip">MAKE A SALAT</span><span class="chip">RISE up to 4 octaves</span><span class="chip">Chop · drive · crush</span><span class="chip">Delay · reverb</span></div><details class="card-changelog"><summary>Changelog</summary><p>RISE: pitch build-ups over 2 to 16 bars, up to 4 octaves, starting and ending on your bar lines.</p></details></div></article>
 
-      <article class="card" data-preview="arp"><div class="pic"><span class="badge inst">New · MIDI</span><img src="img/midigod.png?v=1" alt="MIDI GOD" class="zoom" loading="lazy"></div>
+      <article class="card" data-preview="arp"><div class="pic"><span class="badge inst">New · MIDI</span><img src="img/midigod-480.webp" srcset="img/midigod-480.webp 480w, img/midigod-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/midigod.png?v=1" width="1200" height="700" alt="MIDI GOD" class="zoom" loading="lazy"></div>
         <div class="body"><h3>MIDI <em>GOD</em></h3><div class="sub">MIDI pattern generator + audio to MIDI</div>
           <p>Generate basslines, melodies, arps, chords and drums in your key. Explore ten genres, drag MIDI into your DAW or turn audio into MIDI.</p>
           <div class="chips"><span class="chip hot">106 presets</span><span class="chip">10 genres x 9 roles</span><span class="chip">Drag MIDI to the DAW</span><span class="chip">Audio to MIDI</span></div><details class="card-changelog"><summary>Changelog</summary><p>MIDI pattern generator: bass, acid, leads, arps, chords and drums in 10 genres, drag the loop into your DAW, and audio to MIDI.</p></details></div></article>
 
-      <article class="card" data-preview="kick"><div class="pic"><span class="badge inst">New · Instrument</span><img src="img/kickass.png?v=1" alt="KICKASS" class="zoom" loading="lazy"></div>
+      <article class="card" data-preview="kick"><div class="pic"><span class="badge inst">New · Instrument</span><img src="img/kickass-480.webp" srcset="img/kickass-480.webp 480w, img/kickass-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/kickass.png?v=1" width="1280" height="660" alt="KICKASS" class="zoom" loading="lazy"></div>
         <div class="body"><h3>KICK<em>ASS</em></h3><div class="sub">Kick drum synth · by Asher Swissa</div>
           <p>Build punchy kicks with a two-stage pitch envelope, precise decay, three-band EQ and clean-to-driven tone. Layer your own samples for extra character.</p>
           <div class="chips"><span class="chip hot">50 presets</span><span class="chip">Snap + sweep pitch</span><span class="chip">3-band EQ</span><span class="chip">Splice kick browser</span><span class="chip">Key track</span></div></div></article>
 
-      <article class="card" data-preview="sub"><div class="pic"><span class="badge inst">Instrument</span><img src="img/subich.png?v=3" alt="SUBICH" class="zoom" loading="lazy"></div>
+      <article class="card" data-preview="sub"><div class="pic"><span class="badge inst">Instrument</span><img src="img/subich-480.webp" srcset="img/subich-480.webp 480w, img/subich-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/subich.png?v=3" width="1248" height="851" alt="SUBICH" class="zoom" loading="lazy"></div>
         <div class="body"><h3>SUB<em>ICH</em></h3><div class="sub">Bass + sub bass synth</div>
           <p>Two oscillators and a dedicated sub, built for focused basslines. Shape the groove with dual filters, modulation, legato and glide.</p>
           <div class="chips"><span class="chip hot">1,000 bass presets</span><span class="chip">Psytrance</span><span class="chip">Techno</span><span class="chip">House</span><span class="chip">Indie dance</span></div></div></article>
 
-      <article class="card" data-preview="glitch"><div class="pic"><span class="badge fx">Effect</span><img src="img/shaksuka.png?v=3" alt="SHAKSUKA" class="zoom" loading="lazy"></div>
+      <article class="card" data-preview="glitch"><div class="pic"><span class="badge fx">Effect</span><img src="img/shaksuka-480.webp" srcset="img/shaksuka-480.webp 480w, img/shaksuka-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/shaksuka.png?v=3" width="1248" height="933" alt="SHAKSUKA" class="zoom" loading="lazy"></div>
         <div class="body"><h3>SHAK<em>SUKA</em></h3><div class="sub">Random chop & glitch FX</div>
           <p>Turn audio into rhythmic chops, stutters and reverses. Add tape stops, pitch shifts, gates and filters with swing and evolving grooves.</p>
           <div class="chips"><span class="chip hot">509 presets</span><span class="chip">11 effects</span><span class="chip">Groove quantize</span><span class="chip">Evolving patterns</span></div></div></article>
 
-      <article class="card" data-preview="pump"><div class="pic"><span class="badge fx">Effect</span><img src="img/pitapump.png?v=3" alt="PITA PUMP" class="zoom" loading="lazy"></div>
+      <article class="card" data-preview="pump"><div class="pic"><span class="badge fx">Effect</span><img src="img/pitapump-480.webp" srcset="img/pitapump-480.webp 480w, img/pitapump-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/pitapump.png?v=3" width="1248" height="821" alt="PITA PUMP" class="zoom" loading="lazy"></div>
         <div class="body"><h3>PITA<em>PUMP</em></h3><div class="sub">Sidechain LFO tool</div>
           <p>Shape the pulse with ten pump curves or draw your own. Sync to the song, trigger from MIDI or follow your kick.</p>
           <div class="chips"><span class="chip hot">105 presets</span><span class="chip">Draw mode</span><span class="chip">Audio sidechain</span><span class="chip">Auto pre-amp</span></div></div></article>
 
-      <article class="card" data-preview="drive"><div class="pic"><span class="badge fx">Effect</span><img src="img/zhug.png?v=3" alt="ZHUG" class="zoom" loading="lazy"></div>
+      <article class="card" data-preview="drive"><div class="pic"><span class="badge fx">Effect</span><img src="img/zhug-480.webp" srcset="img/zhug-480.webp 480w, img/zhug-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/zhug.png?v=3" width="1248" height="718" alt="ZHUG" class="zoom" loading="lazy"></div>
         <div class="body"><h3>ZH<em>UG</em></h3><div class="sub">Saturator + widener</div>
           <p>Eight drive types, from warm tube colour to bitcrushed edges. Dial in multiband saturation, stereo width and a focused mono low end.</p>
           <div class="chips"><span class="chip hot">118 presets</span><span class="chip">4x oversampled</span><span class="chip">Multiband</span><span class="chip">Bass mono</span></div></div></article>
 
-      <article class="card" data-preview="filter"><div class="pic"><span class="badge fx">Effect</span><img src="img/filterfish.png?v=3" alt="The FilterFish" class="zoom" loading="lazy"></div>
+      <article class="card" data-preview="filter"><div class="pic"><span class="badge fx">Effect</span><img src="img/filterfish-480.webp" srcset="img/filterfish-480.webp 480w, img/filterfish-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/filterfish.png?v=3" width="1598" height="998" alt="The FilterFish" class="zoom" loading="lazy"></div>
         <div class="body"><h3>THE <em>FILTERFISH</em></h3><div class="sub">Filter FX</div>
           <p>Animate your sound with creative filters, LFOs and envelopes. Layer chorus, flanger, glitch, delay and reverb, or randomize the whole chain.</p>
           <div class="chips"><span class="chip hot">800 presets</span><span class="chip">Many filter types</span><span class="chip">Glitch</span><span class="chip">Full FX chain</span></div></div></article>
 
-      <article class="card"><div class="pic"><span class="badge inst">New · Instrument</span><img src="img/kube.png?v=1" alt="KUBE" class="zoom" loading="lazy"></div>
+      <article class="card"><div class="pic"><span class="badge inst">New · Instrument</span><img src="img/kube-480.webp" srcset="img/kube-480.webp 480w, img/kube-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/kube.png?v=1" width="1000" height="780" alt="KUBE" class="zoom" loading="lazy"></div>
         <div class="body"><h3>KU<em>BE</em></h3><div class="sub">Psytrance wavetable synth</div>
           <p>Two wavetable oscillators with 24 KUBE-only tables (growl, yoy, robot and more), or drag and drop your own Serum .wav wavetables. Two warp slots per oscillator, 16-voice unison with blend and width, sub, noise and wavefold, a filter, mod section and FX rack, in a lime-on-black skin.</p>
           <div class="chips"><span class="chip hot">106 presets</span><span class="chip">Serum .wav import</span><span class="chip">2 warps per osc</span><span class="chip">16-voice unison</span></div></div></article>
 
-      <article class="card"><div class="pic"><span class="badge fx">New · Effect</span><img src="img/quazi.png?v=1" alt="QUAZI" class="zoom" loading="lazy"></div>
+      <article class="card"><div class="pic"><span class="badge fx">New · Effect</span><img src="img/quazi-480.webp" srcset="img/quazi-480.webp 480w, img/quazi-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/quazi.png?v=1" width="1120" height="650" alt="QUAZI" class="zoom" loading="lazy"></div>
         <div class="body"><h3>QUA<em>ZI</em></h3><div class="sub">4-band fuzz</div>
           <p>A clean 4-band crossover feeds each band into its own soft, hard, fuzz or tube distortion, with its own drive and level. Drag the crossovers on the screen. The mix blends each band with its clean self, so half-wet never sounds hollow. Stereo width with MONO BASS and a 3-band EQ (low shelf, bell, high shelf) finish the sound.</p>
           <div class="chips"><span class="chip hot">104 presets</span><span class="chip">4 bands x 4 drive types</span><span class="chip">4x oversampled</span><span class="chip">Stereo width + mono bass</span><span class="chip">Post EQ</span></div></div></article>
@@ -489,7 +491,7 @@
 
 <div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Image preview" aria-hidden="true"><button class="lb-close" type="button" aria-label="Close image preview"><span>CLOSE</span><span class="close-symbol" aria-hidden="true">×</span></button><img alt=""></div>
 <audio id="site-audio" preload="none" hidden></audio>
-<button class="audio-unlock" type="button" hidden>ENABLE SOUND</button>
+
 <span class="visually-hidden" id="artist-audio-status" aria-live="polite"></span>
 
 <script src="film-gallery.js"></script>
@@ -509,7 +511,7 @@
     if(restoreFocus)guideTriggers.find(trigger=>trigger instanceof HTMLButtonElement)?.focus();
   }
   guideTriggers.forEach(trigger=>trigger.addEventListener('click',event=>{
-    event.preventDefault();heroInfoPanel.hidden=false;guideTriggers.forEach(item=>item.setAttribute('aria-expanded','true'));
+    event.preventDefault();heroInfoPanel.hidden=false;document.querySelector('.info-close')?.focus({preventScroll:true});guideTriggers.forEach(item=>item.setAttribute('aria-expanded','true'));
     heroInfoPanel.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
   }));
   document.querySelector('.info-close')?.addEventListener('click',()=>closeGuide());
@@ -528,8 +530,8 @@
   // Image preview supports keyboard, a clear close control and focus restoration.
   const lb = document.getElementById("lb"), lbImg = lb.querySelector("img"), lbClose = lb.querySelector('.lb-close');
   let lastImageTrigger = null;
-  const openPreview = image => { lastImageTrigger = image; lbImg.src = image.currentSrc || image.src; lbImg.alt = image.alt; lb.classList.add('on'); lb.setAttribute('aria-hidden','false'); document.body.style.overflow = 'hidden'; lbClose.focus(); };
-  const closePreview = () => { lb.classList.remove('on'); lb.setAttribute('aria-hidden','true'); document.body.style.overflow = ''; lbImg.removeAttribute('src'); lastImageTrigger?.focus(); };
+  const openPreview = image => { lastImageTrigger = image; lbImg.src = image.dataset.full || image.currentSrc || image.src; lbImg.alt = image.alt; lb.classList.add('on'); lb.setAttribute('aria-hidden','false'); document.body.style.overflow = 'hidden'; document.getElementById('main').inert=true;document.querySelector('.back-top').inert=true;lbClose.focus(); };
+  const closePreview = () => { lb.classList.remove('on'); lb.setAttribute('aria-hidden','true'); document.body.style.overflow = ''; lbImg.removeAttribute('src'); document.getElementById('main').inert=false;document.querySelector('.back-top').inert=false;lastImageTrigger?.focus(); };
   document.querySelectorAll("img.zoom").forEach(image => {
     image.tabIndex = 0; image.setAttribute('role','button'); image.setAttribute('aria-label',`View ${image.alt} image larger`);
     image.addEventListener('click', () => openPreview(image));
@@ -538,7 +540,7 @@
   lbClose.addEventListener('click', closePreview);
   lb.addEventListener('click', event => { if (event.target === lb) closePreview(); });
   document.addEventListener('keydown', event => {
-    if (!lb.classList.contains('on')) { if (event.key === 'Escape') { closeGuide(false); } return; }
+    if (!lb.classList.contains('on')) { if (event.key === 'Escape') { closeGuide(); } return; }
     if (event.key === 'Escape') closePreview();
     if (event.key === 'Tab') { event.preventDefault(); lbClose.focus(); }
   });

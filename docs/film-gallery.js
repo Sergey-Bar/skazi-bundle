@@ -9,6 +9,7 @@
     const track = root.querySelector('#plugin-reel');
     const cards = [...track.querySelectorAll('.card')];
     if (!cards.length) return;
+    const gridSizes = cards.map(card => card.querySelector('img').sizes);
     const pictures = cards.map(card => card.querySelector('.pic'));
     const meta = root.querySelector('.film-meta');
     const count = root.querySelector('.film-count');
@@ -60,6 +61,7 @@
       cards.forEach((card, i) => {
         const active = i === selected;
         card.classList.toggle('film-active', active);
+        card.setAttribute('aria-roledescription',view==='reel'?'slide':'plugin');
         if(view==='reel')card.setAttribute('aria-hidden', String(!active));else card.removeAttribute('aria-hidden');
         card.querySelectorAll('img.zoom, button').forEach(control => { control.tabIndex = view==='grid'||active ? 0 : -1; });
         const distance = Math.min(modulo(i - selected, total), modulo(selected - i, total));
@@ -285,7 +287,7 @@
       viewport.setAttribute('aria-label',view==='reel'?'Plugin gallery. Drag or use the left and right arrow keys.':'Plugin collection');
       meta.hidden=view==='grid';
       document.querySelectorAll('[data-gallery-view]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.galleryView===view)));
-      cards.forEach(card=>{card.style.removeProperty('transform');card.style.removeProperty('visibility');card.querySelector('.pic').style.removeProperty('transform');});
+      cards.forEach((card,i)=>{card.querySelector('img').sizes=view==='grid'?gridSizes[i]:'(max-width:900px) 90vw, 740px';card.style.removeProperty('transform');card.style.removeProperty('visibility');card.querySelector('.pic').style.removeProperty('transform');});
       select(selected,false);measure();
     }
     document.querySelectorAll('[data-gallery-view]').forEach(button=>button.addEventListener('click',()=>changeView(button.dataset.galleryView)));
