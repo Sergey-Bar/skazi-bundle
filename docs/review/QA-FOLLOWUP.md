@@ -5,7 +5,7 @@
 - Hero sound is off on every page load. An explicit, labelled toggle enables/mutes it; clicking an artist identity is also an explicit play/pause action. Keyboard focus alone never starts playback. The plugin gallery remains silent.
 - The installation guide receives focus on opening. Close and Escape restore focus to its trigger.
 - The image lightbox makes the background inert and restores focus on Close/Escape. The original PNG is loaded for enlargement, not the compressed thumbnail.
-- A visible Explore the plugins link is available in the first mobile viewport and moves keyboard focus to the labelled gallery. At 390px, the gallery starts around 1,130px rather than 1,409px; the hero is around 927px rather than 1,173px.
+- The opening Hero fills the viewport, with a full-width red animated waveform linking to the gallery and moving keyboard focus there. The former Explore the plugins text link was removed. At 390 x 844, the Hero measures 844px with no horizontal overflow. Short screens can grow to preserve content. Reduced-motion preferences disable waveform animation.
 - Hero and all 15 plugin thumbnails use responsive WebP variants with intrinsic dimensions. Reel mode requests a larger candidate. Existing full-size PNG assets remain available. See image-optimization.json for source and variant sizes: source images total 4,967,572 bytes; small variants total 416,680 bytes (about 92% smaller). This is an asset-size comparison, not a measured page-load-speed claim.
 - Instrument and effect badges use Netflix red (#E50914) with white text. Small artist captions are 11px. Guide and Reel corners now match the rounded design.
 

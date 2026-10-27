@@ -60,7 +60,7 @@
         setEnabled(true);artist.dataset.active=persona;play(persona);
       });
     });
-    document.querySelector('.explore-plugins').addEventListener('click',()=>{
+    document.querySelector('.hero-wave').addEventListener('click',()=>{
       stop();document.getElementById('plugins').focus({preventScroll:true});
     });
     cards.forEach(card=>{
