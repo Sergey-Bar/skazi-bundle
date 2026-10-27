@@ -83,7 +83,6 @@
     if(document.documentElement.classList.contains('intro-pending')){
       const main=document.getElementById('main');
       const navigation=document.querySelector('nav');
-      const mark=overlay.querySelector('.intro-mark');
       const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
       let finished=false,started=false;
       overlay.hidden=false;main.inert=true;if(navigation)navigation.inert=true;
@@ -91,15 +90,10 @@
       const cleanup=()=>{if(finished)return;finished=true;document.documentElement.classList.remove('intro-pending','intro-soft');overlay.hidden=true;main.inert=false;if(navigation)navigation.inert=false;};
       const finish=()=>{
         if(started||finished)return;started=true;
-        const destination=document.querySelector('.hero-logo .logo-art').getBoundingClientRect();
-        const origin=mark.getBoundingClientRect();
-        const visible=destination.top>=0&&destination.bottom<=innerHeight;
-        const duration=reduced?180:soft?450:750;
-        if(!reduced&&!soft&&visible){
-          mark.style.transformOrigin='0 0';
-          mark.animate([{transform:'translate(-50%,-50%)'},{transform:`translate(calc(-50% + ${destination.left-origin.left}px),calc(-50% + ${destination.top-origin.top}px)) scale(${destination.width/origin.width})`}],{duration,easing:'cubic-bezier(.22,.8,.2,1)',fill:'forwards'});
-        }
-        overlay.animate([{opacity:1},{opacity:0}],{duration,easing:'ease-in',fill:'forwards'}).finished.then(cleanup,cleanup);
+        const duration=reduced?180:soft?650:900;
+        const heroLogo=document.querySelector('.hero-logo');
+        heroLogo.animate([{opacity:0},{opacity:1}],{duration,easing:'ease-in-out',fill:'forwards'});
+        overlay.animate([{opacity:1},{opacity:0}],{duration,easing:'ease-in-out',fill:'forwards'}).finished.then(cleanup,cleanup);
       };
       overlay.querySelector('.intro-skip').addEventListener('click',cleanup);
       setTimeout(finish,reduced?150:soft?300:1500);

@@ -269,3 +269,8 @@ footer .wrap{font-size:12px}
 .intro-soft .intro-mark img{animation:none;filter:none}
 .intro-soft .intro-halo,.intro-soft .intro-equalizer{display:none}
 .intro-soft.intro-pending .hero-logo{opacity:1}
+
+/* Minimal scroll cue; crossfade the opening logo into the Hero. */
+.hero-wave{left:50%;bottom:16px;width:44px;height:44px;transform:translateX(-50%);overflow:visible;background:none}
+.hero-wave:before{display:none}
+.intro-soft.intro-pending .hero-logo{opacity:0}
