@@ -253,3 +253,13 @@ footer .wrap{font-size:12px}
 @keyframes wave-nudge{0%,100%{transform:translateY(-2px)}50%{transform:translateY(3px)}}
 @media(max-width:700px){.hero-wave{height:72px}.hero-wave-arrow{width:44px;height:44px}.hero-wave-ribbons{width:180%;left:-40%}}
 @media(prefers-reduced-motion:reduce){.hero-wave-ribbons path,.hero-wave-arrow:before,.hero-wave-arrow svg{animation:none}.hero-wave-ribbons,.hero-wave-arrow,.hero-wave:before{transition:none}}
+
+/* Quiet, matched scroll controls with comfortable pointer targets. */
+.hero-wave-arrow,.back-top{width:44px;height:44px;border:1px solid #ffffff26;border-radius:50%;background:#101010e6;color:#f5f5f5;box-shadow:none}
+.hero-wave-arrow:before{display:none}
+.hero-wave-arrow svg,.back-top svg{width:18px;height:18px;stroke:currentColor;stroke-width:1.35}
+.hero-wave-arrow svg{animation:none}
+.hero-wave:hover .hero-wave-arrow,.hero-wave:focus-visible .hero-wave-arrow,.back-top:hover{background:#191919;border-color:var(--acid);color:var(--acid);box-shadow:none}
+.hero-wave:hover .hero-wave-arrow{transform:translateY(2px)}
+.back-top{right:20px;bottom:20px}
+.back-top:focus-visible{outline:2px solid #fff;outline-offset:4px}
