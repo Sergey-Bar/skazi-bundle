@@ -16,9 +16,9 @@ Every plugin uses the vendor name **SKAZI**, so DAWs list them together.
 
 ---
 
-## What's Inside
+## 🎛️ What's Inside
 
-| Folder | Plugin | Type |
+<|message|> Folder | Plugin | Type |
 |---|---|---|
 | `SKAZI-Synth` | **SKAZI** | Psy / acid / VA synth — Virus-style supersaw unison, analog drift, wavetables, 3,650 presets |
 | `Bully` | **BULLY** | Wavetable monster — 3 osc, SHARP 24 filter, 462 presets |
@@ -42,16 +42,20 @@ Plugin IDs (manufacturer + plugin codes) are unchanged, so existing DAW projects
 
 ---
 
-## Adding a New Plugin
+<details>
+<summary><b>📦 Adding a New Plugin</b></summary>
 
 1. Put the plugin folder here with bundle-style CMake (JUCE 8.0.4, vendor **SKAZI**, AU on Mac).
 2. Add it to `build_bundle.ps1`, `mac/build_mac.sh`, `mac/welcome.html`, `mac/Uninstall SKAZI Bundle.command`, `BundleInstaller/SetupMain.cpp` and a row at the end of the table above.
 3. On the download page (`docs/index.html`), add its card **at the bottom of the list** (the newest plugin is always last; BULLY stays first) and update the plugin and preset counts.
 4. Push to `main`. CI builds both installers and publishes them as the next release (v1.3, v1.4, …). The page's download buttons link to `releases/latest`, so they serve the new installer as soon as the release is up.
 
+</details>
+
 ---
 
-## Build the Installer (Windows)
+<details>
+<summary><b>🪟 Build the Installer (Windows)</b></summary>
 
 Needs Visual Studio 2022 (C++ workload), CMake and Git.
 
@@ -63,7 +67,8 @@ Output: `dist\SKAZI Bundle Setup.exe`, plus every plugin's VST3 and app in `dist
 JUCE is downloaded automatically (8.0.4 and 8.0.15).  
 `-PluginsOnly` builds just the plugins, `-InstallerOnly` re-packs the last built plugins.
 
-### What the Installer Does
+<details>
+<summary><b>What the Installer Does</b></summary>
 
 - Lets you tick which plugins to install
 - VST3s go to `C:\Program Files\Common Files\VST3\SKAZI\`
@@ -74,15 +79,14 @@ JUCE is downloaded automatically (8.0.4 and 8.0.15).
 
 > ⚠️ The installer is not code-signed, so Windows SmartScreen shows "Windows protected your PC": click **More info, then Run anyway**.
 
----
+</details>
 
-## Logo
-
-Save the SKAZI logo as `Resources\skazi_logo.png` (and in each plugin's `Resources` folder) and rebuild; until then a drawn stand-in is used.
+</details>
 
 ---
 
-## Mac (OS X / macOS)
+<details>
+<summary><b>🍎 Mac (OS X / macOS)</b></summary>
 
 `mac/build_mac.sh` builds all plugins for Apple Silicon + Intel and makes **`dist/SKAZI Bundle.pkg`**:
 
@@ -95,6 +99,17 @@ It must run on a Mac (`bash mac/build_mac.sh`). Without a Mac, push this folder 
 > ⚠️ The Mac installer is not signed with an Apple Developer ID, so the first time macOS blocks it: right-click the `.pkg`, choose **Open**, then **Open** again (or System Settings > Privacy & Security > Open Anyway).
 
 Before pushing to GitHub, remove the `SKAZI-Synth/.git` folder from this copy (the full history stays in `Documents\ACIDANCE\ACIDANCE`), otherwise GitHub treats it as an empty sub-project.
+
+</details>
+
+---
+
+<details>
+<summary><b>🎨 Logo</b></summary>
+
+Save the SKAZI logo as `Resources\skazi_logo.png` (and in each plugin's `Resources` folder) and rebuild; until then a drawn stand-in is used.
+
+</details>
 
 ---
 
