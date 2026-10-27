@@ -263,3 +263,9 @@ footer .wrap{font-size:12px}
 .hero-wave:hover .hero-wave-arrow{transform:translateY(2px)}
 .back-top{right:20px;bottom:20px}
 .back-top:focus-visible{outline:2px solid #fff;outline-offset:4px}
+
+/* Reloads use a quiet, brief dissolve instead of the full opening sequence. */
+.intro-soft .intro-mark{width:min(340px,60vw)}
+.intro-soft .intro-mark img{animation:none;filter:none}
+.intro-soft .intro-halo,.intro-soft .intro-equalizer{display:none}
+.intro-soft.intro-pending .hero-logo{opacity:1}

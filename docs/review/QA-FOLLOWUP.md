@@ -16,7 +16,7 @@ Manual interaction checks in the in-app Chromium browser and Chrome:
 - Sound starts disabled; enable plays, mute pauses.
 - Guide opening focuses Close; Escape returns to the guide trigger.
 - Image enlargement works with pointer and Enter; Escape closes it, removes inert and restores the image trigger.
-- First-visit intro completes and releases inert in Chrome; reloading skips it.
+- The intro runs on every document load; reloads use a shorter dissolve with no pulse, equalizer or logo-flight animation. Skip and reduced-motion support remain.
 - Grid/Reel and keyboard End navigation reach QUAZI as item 15; browsing remains silent (in-app browser).
 - 390px mobile: no horizontal overflow; gallery shortcut focuses the gallery. Viewport override reset after checking.
 - No JavaScript errors captured during the tested interactions.
@@ -42,4 +42,4 @@ These checks cover the revised pairs, not every possible rendered state.
 - A complete accessibility audit, every hover/focus contrast combination, zoom/text resizing, real-device touch and throttled-network performance testing remain release checks.
 - Installer execution is outside this website QA pass. No claim of full WCAG certification or all-browser compatibility is made.
 
-The intro preference remains per browser, not an account-level setting.
+Intro playback no longer uses a stored first-visit preference.

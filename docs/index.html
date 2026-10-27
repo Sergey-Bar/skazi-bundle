@@ -278,8 +278,10 @@
 <link rel="stylesheet" href="film-gallery.css">
 <link rel="stylesheet" href="site-experience.css">
 <script>
-  try { if (!localStorage.getItem('skazi-intro-seen-v1')) document.documentElement.classList.add('intro-pending'); }
-  catch { try { if (!sessionStorage.getItem('skazi-intro-seen-v1')) document.documentElement.classList.add('intro-pending'); } catch {} }
+  document.documentElement.classList.add('intro-pending');
+  if (performance.getEntriesByType('navigation')[0]?.type === 'reload') {
+    document.documentElement.classList.add('intro-soft');
+  }
   setTimeout(() => document.documentElement.classList.remove('intro-pending'), 5000);
 </script>
 </head>
