@@ -274,3 +274,17 @@ footer .wrap{font-size:12px}
 .hero-wave{left:50%;bottom:16px;width:44px;height:44px;transform:translateX(-50%);overflow:visible;background:none}
 .hero-wave:before{display:none}
 .intro-soft.intro-pending .hero-logo{opacity:0}
+
+/* Shared-size logo handoff and restored musical halo. */
+.hero{min-height:calc(100svh + 80px);padding-bottom:180px}
+.intro-halo{border:1px solid #e5091470;box-shadow:0 0 65px #e5091430,inset 0 0 40px #e5091414}
+.intro-halo:before,.intro-halo:after{content:"";position:absolute;inset:-14px;border:1px dashed #e5091466;border-radius:50%;animation:intro-orbit 12s linear infinite}
+.intro-halo:after{inset:14px;border-style:solid;border-color:#e5091438;animation:intro-ring 1.25s ease-out infinite}
+.intro-soft .intro-halo{display:block;opacity:.45;animation:intro-ring 2s ease-out infinite}
+.intro-soft .intro-halo:before{animation-duration:20s}
+@keyframes intro-orbit{to{transform:rotate(360deg)}}
+@media(max-width:700px){.hero{min-height:calc(100svh + 56px);padding-bottom:132px}}
+@media(prefers-reduced-motion:reduce){.intro-pending #site-intro .intro-halo{display:none}.intro-halo:before,.intro-halo:after{animation:none}}
+
+.hero-wave{bottom:96px}
+@media(max-width:700px){.hero-wave{bottom:72px}}

@@ -87,12 +87,28 @@
       let finished=false,started=false;
       overlay.hidden=false;main.inert=true;if(navigation)navigation.inert=true;
       const soft=document.documentElement.classList.contains('intro-soft');
-      const cleanup=()=>{if(finished)return;finished=true;document.documentElement.classList.remove('intro-pending','intro-soft');overlay.hidden=true;main.inert=false;if(navigation)navigation.inert=false;};
+      const mark=overlay.querySelector('.intro-mark');
+      const heroArt=document.querySelector('.hero-logo .logo-art');
+      const matchLogo=()=>{mark.style.width=heroArt.getBoundingClientRect().width+'px';};
+      matchLogo();
+      window.addEventListener('resize',matchLogo);
+      const logoImage=heroArt.querySelector('img');
+      logoImage.decode?.().then(matchLogo).catch(()=>{});
+      const cleanup=()=>{if(finished)return;finished=true;window.removeEventListener('resize',matchLogo);document.documentElement.classList.remove('intro-pending','intro-soft');overlay.hidden=true;main.inert=false;if(navigation)navigation.inert=false;};
       const finish=()=>{
         if(started||finished)return;started=true;
         const duration=reduced?180:soft?650:900;
         const heroLogo=document.querySelector('.hero-logo');
-        heroLogo.animate([{opacity:0},{opacity:1}],{duration,easing:'ease-in-out',fill:'forwards'});
+        const target=heroArt.getBoundingClientRect();
+        const origin=mark.getBoundingClientRect();
+        const visible=target.top>=0&&target.bottom<=innerHeight;
+        if(!reduced&&visible){
+          mark.animate([
+            {transform:'translate(-50%,-50%)',opacity:1},
+            {transform:`translate(calc(-50% + ${target.left-origin.left}px),calc(-50% + ${target.top-origin.top}px))`,opacity:1}
+          ],{duration,easing:'cubic-bezier(.22,1,.36,1)',fill:'forwards'});
+        }
+        heroLogo.animate([{opacity:0,offset:0},{opacity:0,offset:.5},{opacity:1,offset:1}],{duration,easing:'ease-in-out',fill:'forwards'});
         overlay.animate([{opacity:1},{opacity:0}],{duration,easing:'ease-in-out',fill:'forwards'}).finished.then(cleanup,cleanup);
       };
       overlay.querySelector('.intro-skip').addEventListener('click',cleanup);
