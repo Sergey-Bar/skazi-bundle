@@ -198,7 +198,7 @@ footer .wrap{font-size:12px}
 .explore-plugins span{color:var(--accent-text);font-size:21px}
 #plugins:focus{outline:none}
 #plugins .film-gallery[data-view="grid"] .badge{color:#fff;background:var(--acid);opacity:1;border-color:var(--acid);font-size:11px}
-#plugins .film-gallery[data-view="grid"] .badge.fx{color:#b8dfff;background:#171717;border-color:#5b3838}
+#plugins .film-gallery .badge.fx{color:#fff;background:var(--acid);border-color:var(--acid);opacity:1}
 #plugins h3 em{color:var(--accent-text)}
 .info-topline,.hero-info-trigger:hover,.free-label{color:#f5f5f5}
 .btn-red,.btn-red:hover,.chip.hot,.tab.on,.skip-link,::selection{color:#fff}
