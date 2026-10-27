@@ -1,6 +1,6 @@
 <div align="center">
 
-![SKAZI Logo](Resources/skazi_logo.png)
+![SKAZI Logo](Resources/1.png)
 
 # SKAZI Bundle
 
