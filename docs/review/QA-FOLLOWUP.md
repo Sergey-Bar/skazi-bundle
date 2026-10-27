@@ -7,7 +7,7 @@
 - The image lightbox makes the background inert and restores focus on Close/Escape. The original PNG is loaded for enlargement, not the compressed thumbnail.
 - A visible Explore the plugins link is available in the first mobile viewport and moves keyboard focus to the labelled gallery. At 390px, the gallery starts around 1,130px rather than 1,409px; the hero is around 927px rather than 1,173px.
 - Hero and all 15 plugin thumbnails use responsive WebP variants with intrinsic dimensions. Reel mode requests a larger candidate. Existing full-size PNG assets remain available. See image-optimization.json for source and variant sizes: source images total 4,967,572 bytes; small variants total 416,680 bytes (about 92% smaller). This is an asset-size comparison, not a measured page-load-speed claim.
-- Category badges now have opaque backgrounds and lighter text. Small artist captions are 11px. Guide and Reel corners now match the rounded design.
+- Instrument badges use Netflix red (#E50914) with white text; effect badges retain opaque dark backgrounds and light blue text. Small artist captions are 11px. Guide and Reel corners now match the rounded design.
 
 ## Verified
 
@@ -26,11 +26,11 @@ Calculated contrast ratios for selected opaque colour pairs:
 
 | Text | Ratio |
 | --- | --- |
-| Instrument badge | 8.35:1 |
+| White instrument badge text on Netflix red | 4.79:1 |
 | Effect badge | 12.84:1 |
-| Light red accent on card | 6.79:1 |
+| Netflix red large heading on card (#171717) | 3.74:1 |
 | Card description | 8.74:1 |
-| Dark preset text on red | 4.98:1 |
+| White preset text on Netflix red | 4.79:1 |
 | Inactive view selector | 7.05:1 |
 
 These checks cover the revised pairs, not every possible rendered state.
