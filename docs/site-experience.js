@@ -114,7 +114,7 @@
         overlay.animate([{opacity:1},{opacity:0}],{duration,easing:'ease-in-out',fill:'forwards'}).finished.then(cleanup,cleanup);
       };
       overlay.querySelector('.intro-skip').addEventListener('click',cleanup);
-      setTimeout(finish,reduced?150:soft?300:1500);
+      setTimeout(finish,reduced?150:soft?650:2100);
       setTimeout(cleanup,4300);
     }
     return {stop};

@@ -313,3 +313,19 @@ footer .wrap{font-size:12px}
 @keyframes intro-breathe{0%,100%{transform:scale(.97);opacity:.65}50%{transform:scale(1.03);opacity:1}}
 @keyframes intro-reveal{from{opacity:0;filter:blur(7px);transform:translateY(8px)}to{opacity:1;filter:blur(0);transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.intro-mark img,.intro-soft .intro-mark img,.intro-halo,.intro-halo:before,.intro-halo:after{animation:none}}
+
+/* Give the Hero content itself room, not only its bottom edge. */
+.hero h1.hero-logo{margin-bottom:32px}
+.hero .hero-statement{line-height:1.15;margin-bottom:26px}
+.hero .lead{line-height:1.8;margin-top:0;margin-bottom:30px}
+.hero .ctas{margin-top:0;margin-bottom:28px}
+.hero .daw-compat{margin-top:20px}
+.hero .hero-info-trigger{margin-top:24px}
+@media(max-width:600px){
+ .hero{padding-top:32px;padding-bottom:148px}
+ .hero h1.hero-logo{margin-bottom:30px}
+ .hero .hero-statement{margin-bottom:24px;line-height:1.18}
+ .hero .lead{margin:0 0 28px;line-height:1.8}
+ .hero .ctas{margin:0 0 24px}
+ .hero .hero-info-trigger{margin-top:24px}
+}
