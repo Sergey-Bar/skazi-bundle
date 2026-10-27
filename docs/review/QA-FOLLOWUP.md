@@ -48,4 +48,10 @@ Intro playback no longer uses a stored first-visit preference.
 
 - Artist image and audio controls are hidden at widths up to 600px; verified hidden at 390px and visible at 768px. Switching into phone layout disables and stops playback.
 - Phone Hero retains downloads, DAW compatibility and guide, with no horizontal overflow in the checked 390px viewport.
-- Intro adds layered red orbit rings and a soft logo reveal without increasing the existing dwell time. Reloads stay subdued; Skip and reduced-motion styles remain.
+- Intro adds layered red orbit rings and a soft logo reveal with a 2.1-second opening dwell and 650ms reload dwell. Reloads stay subdued; Skip and reduced-motion styles remain.
+
+## Responsive hierarchy pass
+
+- Checked 360, 390, 600, 768, 1024 and 1440px viewport widths in Chromium; no horizontal overflow in these checks. Phone artist remains hidden through 600px, visible at 768px.
+- Grid uses one column through 650px, two through 1000px, then three. Tablet Hero uses balanced columns, constrained headings and wrapping download controls.
+- Card titles and roles lead the reading order; descriptions, subdued feature tags and separated changelog rows use consistent spacing. Full descriptions remain visible. Changelog opening verified on narrow mobile.

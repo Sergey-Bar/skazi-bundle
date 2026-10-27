@@ -329,3 +329,68 @@ footer .wrap{font-size:12px}
  .hero .ctas{margin:0 0 24px}
  .hero .hero-info-trigger{margin-top:24px}
 }
+
+/* Responsive proportions and a consistent reading hierarchy. */
+.hero .wrap{width:min(1320px,calc(100% - 64px));gap:clamp(28px,4vw,64px)}
+.hero .wrap>div:first-child{min-width:0}
+.hero .hero-statement{font-size:clamp(32px,3.2vw,46px);line-height:1.12;letter-spacing:-.045em}
+.hero .lead{max-width:46ch;font-size:15px;line-height:1.75}
+.hero .ctas{gap:12px;flex-wrap:wrap}
+.hero .daw-compat{row-gap:12px}
+#plugins.film-enhanced>.wrap{width:min(1320px,calc(100% - 64px))}
+#plugins.film-enhanced .head{margin-bottom:28px;gap:20px;align-items:center}
+#plugins .film-gallery[data-view="grid"] .grid{gap:24px}
+#plugins .film-gallery[data-view="grid"] .card{padding:14px;box-shadow:0 8px 24px #00000014}
+#plugins .film-gallery[data-view="grid"] .body{padding:24px 10px 10px;gap:0}
+#plugins .film-gallery[data-view="grid"] h3{font-size:28px;line-height:1.15;margin:0 0 8px;letter-spacing:-.035em}
+#plugins .film-gallery[data-view="grid"] .sub{font-size:13px;line-height:1.5;color:#ededed;margin:0 0 18px}
+#plugins .film-gallery[data-view="grid"] .body>p{font-size:14px;line-height:1.7;color:#b5b5b5;margin:0 0 22px}
+#plugins .film-gallery[data-view="grid"] .chips{gap:6px;margin:0 0 22px}
+#plugins .film-gallery[data-view="grid"] .chip{font-size:11px;padding:5px 9px;background:#202020;border-color:#ffffff0d;color:#c8c8c8}
+#plugins .film-gallery[data-view="grid"] .chip.hot{color:#fff;background:var(--acid);border-color:var(--acid)}
+#plugins .film-gallery[data-view="grid"] .card-changelog{border-color:#ffffff12;margin-top:auto}
+.card-changelog summary{font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:#d8d8d8;min-height:48px;padding:14px 0 0}
+.card-changelog summary:after{width:24px;height:24px;flex-basis:24px;border-color:#ffffff26;color:#ccc;font-size:14px}
+.card-changelog summary:hover,.card-changelog[open] summary{color:#fff}
+.card-changelog[open] summary:after{border-color:var(--acid);color:var(--acid)}
+.card-changelog p{font-size:13px;line-height:1.75;color:#bcbcbc;padding:14px 0 2px}
+@media(min-width:701px) and (max-width:1100px){
+ .hero .wrap{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;width:calc(100% - 48px)}
+ .hero h1.hero-logo{max-width:100%;margin-bottom:26px}
+ .hero .hero-statement{font-size:clamp(28px,3.7vw,38px)}
+ .hero .lead{font-size:14px;margin-bottom:24px}
+ .hero .artist-shot{height:clamp(520px,70svh,760px);min-height:0}
+ .hero .ctas a{padding-inline:12px;font-size:13px}
+ .hero .persona-caption b,.hero .persona-zone-asher .persona-caption b{font-size:clamp(18px,2.2vw,24px)}
+ .hero .persona-caption small{font-size:10px;line-height:1.4;letter-spacing:0}
+ .hero .persona-zone{padding-inline:8px}
+ .hero .hero-info-trigger{font-size:11px;padding-inline:14px}
+}
+@media(min-width:601px) and (max-width:700px){
+ .hero .wrap{grid-template-columns:1fr;max-width:560px}
+ .hero h1.hero-logo{max-width:360px}
+ .hero .artist-shot{height:420px;min-height:0;margin-top:32px}
+}
+@media(max-width:700px){
+ .hero .wrap,#plugins.film-enhanced>.wrap{width:calc(100% - 40px)}
+ #plugins.film-enhanced .head{align-items:flex-start;gap:18px}
+ #plugins .head h2{font-size:34px}
+ #plugins .film-gallery[data-view="grid"] .grid{gap:20px}
+ #plugins .film-gallery[data-view="grid"] .body{padding:20px 6px 8px}
+}
+@media(max-width:600px){
+ .hero .hero-statement{font-size:clamp(27px,7.7vw,38px)}
+ .hero .lead{font-size:14px;max-width:42ch}
+ .hero h1.hero-logo{max-width:320px}
+ .hero .ctas a{padding-inline:14px}
+ #plugins.film-enhanced .head{grid-template-columns:1fr}
+ .gallery-view{justify-self:start}
+}
+@media(max-width:380px){
+ .hero .wrap,#plugins.film-enhanced>.wrap{width:calc(100% - 32px)}
+ .hero .ctas{gap:8px}.hero .ctas a{padding-inline:10px;font-size:13px}
+ .daw-icons{gap:6px}.daw-icons li{width:34px;height:34px;flex-basis:34px}
+ .hero .hero-info-trigger{font-size:11px;padding-inline:14px}
+}
+
+@media(max-width:650px){#plugins .film-gallery[data-view="grid"] .grid{grid-template-columns:1fr}}
