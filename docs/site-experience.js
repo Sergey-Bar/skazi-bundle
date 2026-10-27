@@ -37,6 +37,8 @@
         status.textContent=error.name==='NotAllowedError'?'Playback was blocked. Activate Enable sound to retry.':'This audio preview is unavailable.';
       }
     }
+    const phoneLayout=matchMedia('(max-width:600px)');
+    phoneLayout.addEventListener('change',event=>{if(event.matches){setEnabled(false);stop();}});
     soundButton.addEventListener('click',()=>{
       setEnabled(!enabled);
       if(enabled)play(artist.dataset.active||'skazi');

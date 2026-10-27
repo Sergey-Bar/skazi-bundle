@@ -288,3 +288,28 @@ footer .wrap{font-size:12px}
 
 .hero-wave{bottom:96px}
 @media(max-width:700px){.hero-wave{bottom:72px}}
+
+/* A focused phone Hero; artist playback is reserved for larger screens. */
+@media(max-width:600px){
+ .hero .artist-shot{display:none}
+ .hero .wrap{grid-template-columns:1fr}
+ .hero h1.hero-logo{max-width:300px;width:100%;margin-bottom:24px}
+ .hero-statement{font-size:clamp(28px,8vw,36px)}
+ .hero .lead{font-size:14px;line-height:1.65;margin:18px 0}
+ .hero .ctas{margin:22px 0 16px}
+ .hero .hero-info-trigger{margin-top:18px}
+}
+/* A restrained audio-orbit opening: no fake progress or extra waiting. */
+#site-intro{background:radial-gradient(ellipse at 50% 50%,#210d10 0%,#100c0d 34%,#090909 70%)}
+.intro-halo{width:min(580px,84vw);border:1px solid #e5091438;animation:intro-breathe 2.4s ease-in-out infinite;box-shadow:0 0 90px #e509141c,inset 0 0 60px #e5091412}
+.intro-halo:before{inset:-18px;border:0;background:conic-gradient(from 0deg,transparent 0deg,#e50914 75deg,transparent 105deg,transparent 190deg,#e50914aa 265deg,transparent 295deg);mask:radial-gradient(farthest-side,transparent calc(100% - 2px),#000 0);animation:intro-orbit 5s linear infinite}
+.intro-halo:after{inset:18px;border:1px dashed #e5091466;animation:intro-orbit 14s linear reverse infinite}
+.intro-mark img{animation:intro-reveal .7s cubic-bezier(.22,1,.36,1) both}
+.intro-equalizer{opacity:.65;gap:6px}.intro-equalizer i{width:2px;border-radius:999px}
+.intro-skip{border-radius:999px;color:#ccc;border-color:#ffffff26;font:500 11px Inter,sans-serif;letter-spacing:.06em;transition:border-color .2s,color .2s}
+.intro-skip:hover{color:#fff;border-color:var(--acid)}.intro-skip:focus-visible{outline:2px solid #fff;outline-offset:4px}
+.intro-soft .intro-halo{animation:none;opacity:.35}.intro-soft .intro-halo:before{animation-duration:12s}
+.intro-soft .intro-mark img{animation:intro-reveal .3s ease-out both}
+@keyframes intro-breathe{0%,100%{transform:scale(.97);opacity:.65}50%{transform:scale(1.03);opacity:1}}
+@keyframes intro-reveal{from{opacity:0;filter:blur(7px);transform:translateY(8px)}to{opacity:1;filter:blur(0);transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.intro-mark img,.intro-soft .intro-mark img,.intro-halo,.intro-halo:before,.intro-halo:after{animation:none}}

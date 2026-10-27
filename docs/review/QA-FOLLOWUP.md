@@ -43,3 +43,9 @@ These checks cover the revised pairs, not every possible rendered state.
 - Installer execution is outside this website QA pass. No claim of full WCAG certification or all-browser compatibility is made.
 
 Intro playback no longer uses a stored first-visit preference.
+
+## Phone layout and intro polish
+
+- Artist image and audio controls are hidden at widths up to 600px; verified hidden at 390px and visible at 768px. Switching into phone layout disables and stops playback.
+- Phone Hero retains downloads, DAW compatibility and guide, with no horizontal overflow in the checked 390px viewport.
+- Intro adds layered red orbit rings and a soft logo reveal without increasing the existing dwell time. Reloads stay subdued; Skip and reduced-motion styles remain.
