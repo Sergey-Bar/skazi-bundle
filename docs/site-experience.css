@@ -689,3 +689,5 @@ html,body,#site-intro{background:var(--bg)}
 .hero-wave::before,.hero-wave-arrow::before,.hero-wave-arrow::after{display:none}
 .hero-wave-arrow{position:relative;width:48px;height:48px;box-shadow:none;animation:none}
 .hero-wave-arrow svg{animation:none}
+/* WORKS WITH carries the same 28x2 red rule as the artist names. */
+.daw-label::after{width:28px;height:2px;border-radius:1px;background:var(--acid);opacity:1}
