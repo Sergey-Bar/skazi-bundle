@@ -698,3 +698,6 @@ body::after{background:radial-gradient(ellipse 80% 42% at 50% -18%,rgba(229,9,20
 .plugin-dialog-kicker{margin-bottom:12px;font-size:11px}
 /* Category chip: solid red with white text, like the download button. */
 #plugins .film-gallery[data-view="grid"] .body .badge,.plugin-dialog-kicker{border-color:var(--acid);background:var(--acid);color:#fff}
+/* Grid / Reel switch: the active option in solid red with white text, like the download button. */
+.gallery-view button[aria-pressed="true"]{background:var(--acid);color:#fff}
+.gallery-view button:not([aria-pressed="true"]):hover{color:#fff;background:rgba(255,255,255,.06)}
