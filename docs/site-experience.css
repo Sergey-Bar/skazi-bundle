@@ -774,3 +774,8 @@ html,body,#site-intro{background:var(--bg)}
 .back-top svg{width:22px;height:22px;stroke-width:2.6}
 .back-top:hover,.back-top:focus-visible{background:var(--acid);border-color:var(--acid);color:#fff;transform:translateY(-3px)}
 .back-top.visible:hover{transform:translateY(-3px)}
+/* Filter: the chosen category in red. Grid / Reel: icon buttons. */
+.gallery-filter button[aria-pressed="true"]{background:var(--acid);border-color:var(--acid);color:#fff}
+.gallery-view button{display:grid;place-items:center;width:44px;min-height:44px;padding:0}
+.gallery-view button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.gallery-view button:focus-visible{outline:2px solid #fff;outline-offset:2px}
