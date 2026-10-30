@@ -693,3 +693,7 @@ html,body,#site-intro{background:var(--bg)}
 .daw-label::after{width:28px;height:2px;border-radius:1px;background:var(--acid);opacity:1}
 /* Card descriptions stop at three lines; the full text lives in the plugin dialog. */
 #plugins .film-gallery[data-view="grid"] .body>p{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden;min-height:calc(3 * 1.7em)}
+/* Chips on one row: no wrapping, a soft fade where they run out of room, same height on every card. */
+#plugins .film-gallery[data-view="grid"] .chips{flex-wrap:nowrap;overflow:hidden;height:30px;align-items:center;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
+#plugins .film-gallery[data-view="grid"] .chip{flex:0 0 auto;white-space:nowrap}
+#plugins .film-gallery[data-view="grid"] .chip:nth-child(n+4){display:inline-flex}
