@@ -124,7 +124,7 @@
     // Social proof: installer downloads summed over every release, rounded down to the hundred.
     const downloads=document.querySelector('[data-downloads]');
     if(downloads){
-      const show=total=>{const rounded=Math.max(1000,Math.floor(total/100)*100);downloads.dataset.count=String(rounded);if(!document.documentElement.classList.contains('intro-pending'))downloads.textContent=rounded.toLocaleString('en-US');};
+      const show=total=>{downloads.dataset.count=String(total);if(window.animateFigure&&!document.documentElement.classList.contains('intro-pending'))window.animateFigure(downloads);};
       let cachedDownloads=null;
       try{cachedDownloads=Number(sessionStorage.getItem('skazi-downloads'))||null;}catch(error){}
       if(cachedDownloads)show(cachedDownloads);
@@ -203,24 +203,24 @@
     if(!figures.length)return;
     const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
     const format=value=>Math.round(value).toLocaleString('en-US');
-    const run=()=>figures.forEach((figure,index)=>{
+    // Animate one figure from its current value to data-count; reused when live numbers arrive.
+    window.animateFigure=(figure,index=0)=>{
       const target=Number(figure.dataset.count);
-      if(reduced){figure.textContent=format(target);return;}
+      const from=Number(String(figure.textContent).replace(/[^\d]/g,''))||0;
+      if(reduced||document.visibilityState!=='visible'){figure.textContent=format(target);return;}
       const duration=1300+index*200, start=performance.now();
       const step=now=>{
         const progress=Math.min(1,(now-start)/duration);
         const eased=1-Math.pow(1-progress,3);
-        figure.textContent=format(target*eased);
+        figure.textContent=format(from+(target-from)*eased);
         if(progress<1)requestAnimationFrame(step);
       };
-      figure.textContent='0';
       requestAnimationFrame(step);
       setTimeout(()=>{figure.textContent=format(target);},duration+120);
-    });
+    };
+    const run=()=>figures.forEach((figure,index)=>{figure.textContent='0';window.animateFigure(figure,index);});
     const html=document.documentElement;
-    let seen=false;
-    try{seen=!!sessionStorage.getItem('skazi-counted');sessionStorage.setItem('skazi-counted','1');}catch(error){}
-    if(seen||document.visibilityState!=='visible'){
+    if(document.visibilityState!=='visible'){
       figures.forEach(figure=>{figure.textContent=format(Number(figure.dataset.count));});
       return;
     }
