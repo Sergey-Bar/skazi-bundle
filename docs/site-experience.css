@@ -659,3 +659,13 @@ html,body,#site-intro{background:var(--bg)}
 .plugin-dialog-panel,.info-shell,.os-chooser-panel,.dl-toast-panel{background:rgba(27,27,27,.86)}
 .plugin-dialog-media{background:rgba(0,0,0,.3)}
 .hero-wave-arrow,.back-top{background:rgba(20,20,20,.9)}
+/* Site backdrop matches the portrait's own background exactly. */
+:root{--bg:#060608;--surface:#151517}
+html,body,#site-intro{background:var(--bg)}
+.site-nav{background:rgba(6,6,8,.76)}
+.dl-bar{background:rgba(6,6,8,.84)}
+#plugins .film-gallery[data-view="grid"] .card{background:var(--surface)}
+#plugins .film-gallery[data-view="grid"] .pic::after{background:linear-gradient(transparent,rgba(21,21,23,.96))}
+.persona-zone .persona-caption{background:rgba(6,6,8,.55)}
+.hero-wave-arrow,.back-top{background:rgba(6,6,8,.9)}
+.plugin-dialog-panel,.info-shell,.os-chooser-panel,.dl-toast-panel{background:rgba(21,21,23,.9)}
