@@ -785,3 +785,13 @@ html,body,#site-intro{background:var(--bg)}
 .gallery-view{grid-column:2;grid-row:3;align-self:center;justify-self:end;padding:4px}
 .gallery-view button{width:40px;min-height:40px}
 @media(max-width:700px){#plugins.film-enhanced .head{grid-template-columns:1fr auto}.gallery-filter{grid-column:1/3;grid-row:3}.gallery-view{grid-column:2;grid-row:4;justify-self:end}}
+/* One idle-button style everywhere: the filter chip look (soft dark fill, hairline border, pill). Selected = red. */
+:root{--btn-bg:rgba(255,255,255,.04);--btn-line:rgba(255,255,255,.12);--btn-text:#cfcfcf;--btn-bg-hover:rgba(255,255,255,.1);--btn-line-hover:rgba(255,255,255,.3)}
+.gallery-view{gap:6px;padding:0;border:0;background:none}
+.gallery-view button,.gallery-filter button,.info-tab,.tab,.card-more,.info-close,.lb-close,.os-chooser-close,.dl-toast-close,.film-navigation button,.plugin-dialog-nav button,.intro-skip{background:var(--btn-bg);border:1px solid var(--btn-line);color:var(--btn-text)}
+.gallery-view button{border-radius:999px}
+.tab{color:var(--btn-text)}
+.gallery-view button:hover,.gallery-filter button:hover,.info-tab:hover:not(.is-active),.tab:hover:not(.on),.card-more:hover,.info-close:hover,.lb-close:hover,.os-chooser-close:hover,.dl-toast-close:hover,.film-navigation button:hover,.plugin-dialog-nav button:hover,.intro-skip:hover{background:var(--btn-bg-hover);border-color:var(--btn-line-hover);color:#fff}
+.card:hover .card-more{background:var(--btn-bg-hover);border-color:var(--btn-line-hover);color:#fff}
+.gallery-view button[aria-pressed="true"],.gallery-filter button[aria-pressed="true"],.info-tab.is-active,.tab.on{background:var(--acid);border-color:var(--acid);color:#fff}
+.gallery-view button[aria-pressed="true"]:hover,.gallery-filter button[aria-pressed="true"]:hover{background:#c90812;border-color:#c90812}
