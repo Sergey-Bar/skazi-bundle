@@ -1,69 +1,10 @@
 (() => {
   'use strict';
   window.initSiteExperience = function () {
-    const audio=document.getElementById('site-audio');
-    const artist=document.getElementById('artist-shot');
-    const status=document.getElementById('artist-audio-status');
-    const soundButton=document.getElementById('hero-sound-toggle');
     const gallery=document.querySelector('.film-gallery');
     const cards=[...gallery.querySelectorAll('.card')];
-    const zones=[...artist.querySelectorAll('[data-persona]')];
-    const tracks={skazi:{name:'SKAZI · JUNAM',src:'audio/skazi-junam.mp3'},asher:{name:'ASHER SWISSA · IMANI',src:'audio/asher-imani.mp3'}};
-    let enabled=false,target=null,token=0;
-    audio.volume=.75;
-    function stop(){++token;audio.pause();target=null;artist.classList.remove('is-playing');zones.forEach(z=>z.setAttribute('aria-pressed','false'));}
-    function setEnabled(value){
-      enabled=value;soundButton.setAttribute('aria-pressed',String(value));
-      soundButton.textContent=value?'SOUND ON · MUTE':'SOUND OFF · ENABLE';
-      if(!value){stop();status.textContent='Artist previews muted.';}
-    }
-    async function play(persona){
-      if(!enabled||document.hidden)return;
-      if(target===persona&&!audio.paused)return;
-      stop();target=persona;const request=++token;
-      const track=tracks[persona];
-      const url=new URL(track.src,document.baseURI).href;
-      if(audio.src!==url)audio.src=url;
-      else {try{audio.currentTime=0;}catch{}}
-      try{
-        await audio.play();
-        if(request!==token)return;
-        artist.classList.add('is-playing');
-        zones.find(z=>z.dataset.persona===persona)?.setAttribute('aria-pressed','true');
-        status.textContent=`Playing ${track.name}. Use Sound On to mute.`;
-      }catch(error){
-        if(request!==token)return;
-        setEnabled(false);
-        status.textContent=error.name==='NotAllowedError'?'Playback was blocked. Activate Enable sound to retry.':'This audio preview is unavailable.';
-      }
-    }
-    const phoneLayout=matchMedia('(max-width:600px)');
-    phoneLayout.addEventListener('change',event=>{if(event.matches){setEnabled(false);stop();}});
-    soundButton.addEventListener('click',()=>{
-      setEnabled(!enabled);
-      if(enabled)play(artist.dataset.active||'skazi');
-    });
-    zones.forEach(zone=>{
-      const persona=zone.dataset.persona;
-      zone.setAttribute('aria-pressed','false');
-      zone.addEventListener('pointerenter',event=>{
-        artist.dataset.active=persona;
-        if(event.pointerType!=='touch')play(persona);
-      });
-      zone.addEventListener('pointerleave',()=>{
-        artist.dataset.active='';
-        if(target===persona)stop();
-      });
-      // Focus highlights the identity without unexpectedly starting audio.
-      zone.addEventListener('focus',()=>{artist.dataset.active=persona;});
-      zone.addEventListener('blur',()=>{artist.dataset.active='';});
-      zone.addEventListener('click',()=>{
-        if(target===persona&&!audio.paused){stop();return;}
-        setEnabled(true);artist.dataset.active=persona;play(persona);
-      });
-    });
     document.querySelector('.hero-wave').addEventListener('click',()=>{
-      stop();document.getElementById('plugins').focus({preventScroll:true});
+      document.getElementById('plugins').focus({preventScroll:true});
     });
     cards.forEach(card=>{
       const reduced=matchMedia('(prefers-reduced-motion: reduce)');
@@ -78,8 +19,6 @@
       });
       card.addEventListener('pointerleave',()=>{card.style.setProperty('--tilt-x','0deg');card.style.setProperty('--tilt-y','0deg');});
     });
-    audio.addEventListener('ended',()=>{stop();status.textContent='Artist preview finished.';});
-    document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
 
     const overlay=document.getElementById('site-intro');
     if(document.documentElement.classList.contains('intro-pending')){
@@ -117,6 +56,122 @@
       setTimeout(finish,reduced?150:soft?650:2100);
       setTimeout(cleanup,4300);
     }
-    return {stop};
+    return {stop(){}};
+  };
+
+  /* Downloads follow the visitor's OS, show live release details and stay reachable while scrolling. */
+  window.initDownloads = function () {
+    const platform=navigator.userAgentData?.platform||navigator.platform||navigator.userAgent||'';
+    const os=/Mac|iPhone|iPad|iPod/i.test(platform)?'mac':'win';
+    const other=os==='mac'?'win':'mac';
+    const links={win:'https://github.com/slazoasher/skazi-bundle/releases/latest/download/SKAZI.Bundle.Setup.exe',mac:'https://github.com/slazoasher/skazi-bundle/releases/latest/download/SKAZI.Bundle.pkg'};
+    const labels={win:'Windows',mac:'Mac'};
+    document.querySelectorAll('[data-dl-primary]').forEach(link=>{
+      link.href=links[os];
+      link.querySelector('[data-dl-os-label]').textContent=`for ${labels[os]}`;
+      link.setAttribute('aria-label',`Download SKAZI Bundle for ${labels[os]}`);
+    });
+    document.querySelectorAll('[data-dl-secondary]').forEach(link=>{link.href=links[other];link.textContent=`${labels[other]} version`;});
+    const ctas=document.getElementById('download');
+    // One Download button everywhere; the chooser recommends the visitor's OS.
+    const chooser=document.getElementById('os-chooser');
+    const options=[...chooser.querySelectorAll('.os-option')];
+    options.forEach(option=>{
+      const match=option.dataset.dl===os;
+      option.classList.toggle('is-recommended',match);
+      option.setAttribute('aria-label',`Download for ${labels[option.dataset.dl]}${match?' (detected)':''}`);
+    });
+    chooser.querySelector('.os-options').prepend(chooser.querySelector(`.os-option[data-dl="${os}"]`));
+    let chooserTrigger=null;
+    const setInert=value=>document.querySelectorAll('#main,.back-top,.site-nav,.dl-bar').forEach(el=>{el.inert=value;});
+    const openChooser=trigger=>{
+      chooserTrigger=trigger;chooser.hidden=false;setInert(true);document.body.style.overflow='hidden';
+      chooser.querySelector('.os-option').focus();
+    };
+    const closeChooser=(restore=true)=>{
+      if(chooser.hidden)return;
+      chooser.hidden=true;setInert(false);document.body.style.overflow='';
+      if(restore)chooserTrigger?.focus();
+    };
+    document.querySelectorAll('[data-open-download]').forEach(button=>button.addEventListener('click',()=>openChooser(button)));
+    chooser.querySelector('.os-chooser-close').addEventListener('click',()=>closeChooser());
+    chooser.addEventListener('click',event=>{if(event.target===chooser)closeChooser();});
+    chooser.addEventListener('keydown',event=>{
+      if(event.key==='Escape'){event.preventDefault();closeChooser();return;}
+      if(event.key!=='Tab')return;
+      const focusable=[...chooser.querySelectorAll('a,button')];
+      const first=focusable[0], last=focusable[focusable.length-1];
+      if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+      else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+    });
+
+    // After a download starts, explain the unsigned-installer prompt for that OS.
+    const toast=document.getElementById('dl-toast');
+    const toastText={
+      win:'Windows may show “Windows protected your PC” because the installer isn’t code-signed yet. Click More info → Run anyway.',
+      mac:'macOS may block the first open. Right-click the .pkg, choose Open, then confirm.'
+    };
+    let toastTimer=0;
+    const hideToast=()=>{toast.hidden=true;clearTimeout(toastTimer);};
+    const showToast=key=>{
+      toast.querySelector('[data-toast-text]').textContent=toastText[key];
+      toast.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(hideToast,20000);
+    };
+    toast.querySelector('.dl-toast-close').addEventListener('click',hideToast);
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!toast.hidden)hideToast();});
+    options.forEach(option=>option.addEventListener('click',()=>{closeChooser(false);showToast(option.dataset.dl);}));
+
+    // The sticky download control appears once the hero buttons have scrolled away.
+    if('IntersectionObserver' in window){
+      new IntersectionObserver(([entry])=>{
+        document.body.classList.toggle('cta-away',!entry.isIntersecting&&entry.boundingClientRect.top<0);
+      },{threshold:0}).observe(ctas);
+    }
+    return os;
+  };
+
+  /* A red glow follows a fine pointer and widens over anything clickable. */
+  window.initCursorGlow = function () {
+    if(!matchMedia('(pointer:fine)').matches||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    const glow=document.createElement('div');
+    glow.className='cursor-glow';glow.setAttribute('aria-hidden','true');
+    document.body.append(glow);
+    let x=-100,y=-100,frame=0;
+    const paint=()=>{frame=0;glow.style.transform=`translate(${x}px,${y}px)`;};
+    document.addEventListener('pointermove',event=>{
+      x=event.clientX;y=event.clientY;
+      glow.classList.toggle('is-active',!!event.target.closest('a,button,[role="button"],summary,.card,input,label'));
+      glow.classList.add('is-visible');
+      if(!frame)frame=requestAnimationFrame(paint);
+    },{passive:true});
+    document.addEventListener('pointerleave',()=>glow.classList.remove('is-visible'));
+    document.addEventListener('pointerdown',()=>glow.classList.add('is-pressed'));
+    document.addEventListener('pointerup',()=>glow.classList.remove('is-pressed'));
+  };
+
+  /* Hero figures count up once the page is in view; static numbers for reduced motion or no JavaScript. */
+  window.initHeroCounters = function () {
+    const figures=[...document.querySelectorAll('[data-count]')];
+    if(!figures.length)return;
+    const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const format=value=>Math.round(value).toLocaleString('en-US');
+    const run=()=>figures.forEach((figure,index)=>{
+      const target=Number(figure.dataset.count);
+      if(reduced){figure.textContent=format(target);return;}
+      const duration=1300+index*200, start=performance.now();
+      const step=now=>{
+        const progress=Math.min(1,(now-start)/duration);
+        const eased=1-Math.pow(1-progress,3);
+        figure.textContent=format(target*eased);
+        if(progress<1)requestAnimationFrame(step);
+      };
+      figure.textContent='0';
+      requestAnimationFrame(step);
+    });
+    const html=document.documentElement;
+    if(html.classList.contains('intro-pending')){
+      const watcher=new MutationObserver(()=>{if(!html.classList.contains('intro-pending')){watcher.disconnect();run();}});
+      watcher.observe(html,{attributes:true,attributeFilter:['class']});
+    } else run();
   };
 })();
