@@ -149,6 +149,39 @@
     document.addEventListener('pointerup',()=>glow.classList.remove('is-pressed'));
   };
 
+  /* Card chips: show only the ones that fit on one row, then a "+N" counter for the rest. */
+  window.initCardChips = function () {
+    const rows=[...document.querySelectorAll('#plugins .film-gallery .chips')];
+    if(!rows.length)return;
+    const gallery=document.querySelector('.film-gallery');
+    const fit=()=>{
+      if(gallery.dataset.view!=='grid')return;
+      rows.forEach(row=>{
+        row.querySelector('.chip.more')?.remove();
+        const chips=[...row.querySelectorAll('.chip')];
+        chips.forEach(chip=>{chip.hidden=false;});
+        const limit=row.clientWidth;
+        if(!limit)return;
+        let more=document.createElement('span');more.className='chip more';row.append(more);
+        let hidden=0;
+        for(let i=chips.length-1;i>0;i--){
+          more.textContent=`+${hidden}`;
+          const last=chips.filter(c=>!c.hidden).pop();
+          const fits=last.offsetLeft+last.offsetWidth+(hidden?more.offsetWidth+6:0)<=limit;
+          if(fits)break;
+          chips[i].hidden=true;hidden++;
+        }
+        if(hidden){more.textContent=`+${hidden}`;more.title=chips.filter(c=>c.hidden).map(c=>c.textContent).join(' · ');}
+        else more.remove();
+      });
+    };
+    fit();
+    let timer=0;
+    addEventListener('resize',()=>{clearTimeout(timer);timer=setTimeout(fit,120);},{passive:true});
+    document.querySelectorAll('[data-gallery-view]').forEach(button=>button.addEventListener('click',()=>setTimeout(fit,50)));
+    document.fonts?.ready.then(fit);
+  };
+
   /* Hero figures count up once the page is in view; static numbers for reduced motion or no JavaScript. */
   window.initHeroCounters = function () {
     const figures=[...document.querySelectorAll('[data-count]')];
