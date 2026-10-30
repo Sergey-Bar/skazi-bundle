@@ -674,7 +674,9 @@ void GlitchMagmaEditor::paint (Graphics& g)
     const auto inner = t.reduced (14.0f, 4.0f);
     float lx = t.getRight() + 18.0f;
 #if SKAZI_HAS_LOGO
-    static const Image logo = ImageCache::getFromMemory (BinaryData::skazi_logo_png, BinaryData::skazi_logo_pngSize);
+    // Not a static: one still alive at DLL unload frees Direct2D resources under the loader lock and
+    // deadlocks the DAW on quit. ImageCache hands back the same decoded image every paint.
+    const auto logo = ImageCache::getFromMemory (BinaryData::skazi_logo_png, BinaryData::skazi_logo_pngSize);
     const Rectangle<float> plate (t.getRight() + 10.0f, t.getY(), t.getHeight() * 1.8f, t.getHeight());
     drawRecess (g, plate, 6.0f, Colours::black);
     g.drawImage (logo, plate.reduced (4.0f, 2.0f), RectanglePlacement::centred);
