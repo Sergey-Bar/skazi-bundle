@@ -677,3 +677,10 @@ html,body,#site-intro{background:var(--bg)}
 .persona-caption b::after{content:"";position:absolute;left:0;bottom:0;width:28px;height:2px;border-radius:1px;background:var(--acid)}
 .persona-zone-asher .persona-caption b::after{left:auto;right:0}
 .persona-caption small{margin-top:1px}
+/* Scroll cue: bolder, red. Artist captions: name, rule and genre centred in their box. */
+.hero-wave-arrow{width:48px;height:48px;border:2px solid var(--acid);color:var(--acid);background:rgba(6,6,8,.9)}
+.hero-wave-arrow svg{width:22px;height:22px;stroke-width:2.6}
+.hero-wave:hover .hero-wave-arrow,.hero-wave:focus-visible .hero-wave-arrow{background:var(--acid);border-color:var(--acid);color:#fff;transform:translateY(3px)}
+.persona-zone .persona-caption{align-items:center;text-align:center}
+.persona-zone-asher .persona-caption{align-items:center}
+.persona-caption b::after,.persona-zone-asher .persona-caption b::after{left:50%;right:auto;transform:translateX(-50%)}
