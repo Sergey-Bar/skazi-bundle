@@ -646,3 +646,16 @@ button{font-family:inherit}
 /* Flat, clean black: no ambient glows behind the hero or the opening. */
 body::after,#site-intro::before{display:none}
 html,body,#site-intro{background:#0a0a0a}
+/* Charcoal backdrop with surfaces one step lighter. */
+:root{--bg:#141414;--surface:#1b1b1b}
+html,body,#site-intro{background:var(--bg)}
+.site-nav{background:rgba(20,20,20,.72)}
+.dl-bar{background:rgba(20,20,20,.8)}
+#plugins .film-gallery[data-view="grid"] .card{background:var(--surface);border-color:rgba(255,255,255,.08)}
+#plugins .film-gallery[data-view="grid"] .pic::after{background:linear-gradient(transparent,rgba(27,27,27,.96))}
+.hero-proof span{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1)}
+.daw-icons li{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12)}
+.persona-zone .persona-caption{background:rgba(20,20,20,.6)}
+.plugin-dialog-panel,.info-shell,.os-chooser-panel,.dl-toast-panel{background:rgba(27,27,27,.86)}
+.plugin-dialog-media{background:rgba(0,0,0,.3)}
+.hero-wave-arrow,.back-top{background:rgba(20,20,20,.9)}
