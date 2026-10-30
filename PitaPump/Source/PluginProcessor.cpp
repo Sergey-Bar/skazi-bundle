@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "../../Common/UpdateNotice.h"
 #include "PluginEditor.h"
 #include "Presets.h"
 
@@ -119,7 +120,7 @@ void PitaPumpProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Mi
 
 juce::AudioProcessorEditor* PitaPumpProcessor::createEditor()
 {
-    return new PitaPumpEditor (*this);
+    return skazi::withUpdateNotice (new PitaPumpEditor (*this));
 }
 
 //==============================================================================

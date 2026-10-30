@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "../../Common/UpdateNotice.h"
 #include "PluginEditor.h"
 
 const juce::StringArray Skazi303Processor::distTypes { "Tube", "Fuzz", "Crush", "Fold", "Overdrive", "Distortion",
@@ -62,11 +63,24 @@ juce::AudioProcessorValueTreeState::ParameterLayout Skazi303Processor::createLay
     // Circuit mods
     pct ("flt_track", "Filter Tracking", 0.0f);
     flt ("acc_decay", "Accent Decay", skewed (0.05f, 1.0f, 0.2f), 0.2f, "s");
-    flt ("soft_attack", "Soft Attack", skewed (0.5f, 30.0f, 3.0f), 3.0f, "ms");
+    flt ("soft_attack", "Amp Attack", skewed (0.5f, 5000.0f, 40.0f), 3.0f, "ms");
     flt ("sweep", "Sweep Speed", skewed (0.25f, 4.0f, 1.0f), 1.0f, "x");
     pct ("pulse_width", "Pulse Width", 0.0f);
     pct ("noise", "Noise", 0.0f);
     flt ("vca_decay", "VCA Decay", skewed (0.1f, 8.0f, 1.5f), 2.5f, "s");
+
+    // Envelopes. The defaults are the stock 303: no sustain, a snappy release, an instant filter attack.
+    // Wheels
+    flt ("bend_up", "Bend Up", { 0.0f, 24.0f, 1.0f }, 2.0f, "st");
+    flt ("bend_down", "Bend Down", { 0.0f, 24.0f, 1.0f }, 2.0f, "st");
+    choice ("mw_dest", "Mod Wheel", juce::StringArray { "Cutoff", "Vibrato", "Cutoff + Vibrato" }, 0);
+    pct ("mw_amt", "Mod Wheel Amount", 1.0f);
+
+    pct ("amp_sus", "Amp Sustain", 0.0f);
+    flt ("amp_rel", "Amp Release", skewed (1.0f, 5000.0f, 150.0f), 4.0f, "ms");
+    flt ("flt_att", "Filter Attack", skewed (0.0f, 3000.0f, 150.0f), 0.0f, "ms");
+    pct ("flt_sus", "Filter Sustain", 0.0f);
+    flt ("flt_rel", "Filter Release", skewed (5.0f, 5000.0f, 300.0f), 300.0f, "ms");
     pct ("fat", "Fat (Tube)", 0.15f);
 
     // Diode filter + 303 envelope
@@ -156,6 +170,10 @@ Skazi303Processor::Skazi303Processor()
     p.fltTrack = get ("flt_track");  p.accDecay = get ("acc_decay");  p.softAttack = get ("soft_attack");
     p.sweep = get ("sweep");          p.pulseWidth = get ("pulse_width"); p.noise = get ("noise");
     p.vcaDecay = get ("vca_decay");    p.fat = get ("fat");
+    p.bendUp = get ("bend_up");       p.bendDown = get ("bend_down");
+    p.mwDest = get ("mw_dest");       p.mwAmt = get ("mw_amt");
+    p.ampSus = get ("amp_sus");       p.ampRel = get ("amp_rel");
+    p.fltAtt = get ("flt_att");       p.fltSus = get ("flt_sus");       p.fltRel = get ("flt_rel");
     p.cutoff = get ("cutoff");      p.reso = get ("reso");          p.envMod = get ("envmod");
     p.decay = get ("decay");        p.accent = get ("accent");      p.slideTime = get ("slide_time");
     p.f2Type = get ("f2_type");     p.f2Cutoff = get ("f2_cutoff"); p.f2Reso = get ("f2_reso");
@@ -237,6 +255,11 @@ s303::VoiceParams Skazi303Processor::readVoiceParams() const
     v.filterTrack = p.fltTrack->load();
     v.accentDecaySec = p.accDecay->load();
     v.softAttackSec = p.softAttack->load() * 0.001f;
+    v.ampSustain = p.ampSus->load();
+    v.ampReleaseSec = p.ampRel->load() * 0.001f;
+    v.filterAttackSec = p.fltAtt->load() * 0.001f;
+    v.filterSustain = p.fltSus->load();
+    v.filterReleaseSec = p.fltRel->load() * 0.001f;
     v.sweepSpeed = p.sweep->load();
     v.pulseWidth = p.pulseWidth->load();
     v.noise = p.noise->load();
@@ -346,8 +369,28 @@ void Skazi303Processor::shiftPattern (int direction)
     writePattern (dst);
 }
 
+void Skazi303Processor::applyWheels()
+{
+    const float b = wheelBend.load();
+    voice.setBend (b >= 0.0f ? b * p.bendUp->load() : b * p.bendDown->load());
+    voice.setModWheel (wheelMod.load(), (int) p.mwDest->load(), p.mwAmt->load());
+}
+
 void Skazi303Processor::handleMidi (const juce::MidiMessage& m, bool sequencerActive)
 {
+    if (m.isPitchWheel())
+    {
+        wheelBend.store ((float) juce::jlimit (-1.0, 1.0, (m.getPitchWheelValue() - 8192) / 8191.0));
+        applyWheels();
+        return;
+    }
+    if (m.isController() && m.getControllerNumber() == 1)
+    {
+        wheelMod.store ((float) m.getControllerValue() / 127.0f);
+        applyWheels();
+        return;
+    }
+
     if (m.isNoteOn())
     {
         const int note = m.getNoteNumber();
@@ -417,6 +460,7 @@ void Skazi303Processor::renderChunk (float* left, float* right, int numSamples, 
 {
     const auto vp = readVoiceParams();
     const auto pat = readPattern();
+    applyWheels(); // the on-screen wheels and range knobs; MIDI wheel moves also apply right away
 
     const bool seqOn = p.seqOn->load() > 0.5f;
     const int seqMode = (int) p.seqMode->load(); // 0 = follow host transport, 1 = internal clock
@@ -788,7 +832,7 @@ juce::String Skazi303Processor::getPresetDisplayName() const
 
 juce::AudioProcessorEditor* Skazi303Processor::createEditor()
 {
-    return new Skazi303Editor (*this);
+    return skazi::withUpdateNotice (new Skazi303Editor (*this));
 }
 
 void Skazi303Processor::getStateInformation (juce::MemoryBlock& dest)

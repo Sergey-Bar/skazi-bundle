@@ -108,6 +108,41 @@ void PianoRoll::paint (Graphics& g)
         g.drawVerticalLine ((int) x, area.getY(), area.getBottom());
     }
 
+    auto rowY = [&] (int pitch)
+    {
+        const auto it = std::find (rows.begin(), rows.end(), pitch);
+        return it == rows.end() ? -1.0f : area.getY() + (float) (it - rows.begin()) * rowH + rowH * 0.5f;
+    };
+    // slides: a line from the note into the one it glides to; dips: a tail falling off the note's end
+    g.saveState();
+    g.reduceClipRegion (area.toNearestInt());
+    for (auto& n : pat->notes)
+    {
+        const float y0 = rowY (n.pitch);
+        if (y0 < 0.0f) continue;
+        const float x1 = area.getX() + (float) ((n.start + n.length) / L) * w;
+        if (n.slide)
+            for (auto& o : pat->notes)
+                if (o.pitch != n.pitch && o.start > n.start && o.start < n.start + n.length)
+                {
+                    const float xs = area.getX() + (float) (o.start / L) * w, y1 = rowY (o.pitch);
+                    g.setColour (Colour (0xffff8a7a).withAlpha (0.8f));
+                    g.drawLine (xs - 3.0f, y0, xs + 2.0f, y1, 1.6f);
+                    break;
+                }
+        if (n.dip > 0.0f)
+        {
+            const float xa = area.getX() + (float) ((n.start + n.length * 0.4) / L) * w;
+            const float drop = n.dip * kBendRangeSemis * rowH;
+            Path tail;
+            tail.startNewSubPath (xa, y0);
+            tail.quadraticTo (x1 - 1.0f, y0, x1, y0 + drop);
+            g.setColour (Colour (0xffff8a7a).withAlpha (0.75f));
+            g.strokePath (tail, PathStrokeType (1.5f));
+        }
+    }
+    g.restoreState();
+
     for (auto& n : pat->notes)
     {
         const auto it = std::find (rows.begin(), rows.end(), n.pitch);
@@ -134,7 +169,7 @@ void PianoRoll::paint (Graphics& g)
     tag (g, in, pat->title);
     g.setFont (skin::font (10.0f));
     g.setColour (skin::textDim);
-    g.drawText (String ((int) pat->notes.size()) + " NOTES" + dot + String (roundToInt (proc.tempo())) + " BPM",
+    g.drawText ((pat->detail.isNotEmpty() ? pat->detail + dot : String()) + String ((int) pat->notes.size()) + " NOTES" + dot + String (roundToInt (proc.tempo())) + " BPM",
                 in.withTrimmedRight (12.0f).withHeight (28.0f).toNearestInt(), Justification::centredRight);
 }
 
@@ -254,7 +289,7 @@ void DropZone::paint (Graphics& g)
 //==============================================================================
 MidiGodEditor::MidiGodEditor (MidiGodProcessor& p)
     : EditorBase (p, "MIDI ", "GOD", String::fromUTF8 ("MIDI ARCHITECT + AUDIO TO MIDI  \xc2\xb7  BY ASHER SWISSA"),
-                  String::fromUTF8 ("MIDI GOD v1.0  \xc2\xb7  10 GENRES \xc2\xb7 9 ROLES \xc2\xb7 AUDIO TO MIDI  \xc2\xb7  VST3 / AU  \xc2\xb7  INSTRUMENT + MIDI OUT")),
+                  String::fromUTF8 ("MIDI GOD v1.1  \xc2\xb7  ROLL BASS \xc2\xb7 AUDIO TO MIDI  \xc2\xb7  VST3 / AU  \xc2\xb7  INSTRUMENT + MIDI OUT")),
       mp (p), roll (p), dragTile (p), dropZone (p)
 {
     setSubtitleSize (15.0f);
@@ -270,6 +305,9 @@ MidiGodEditor::MidiGodEditor (MidiGodProcessor& p)
     addAndMakeVisible (saveBtn);
     saveBtn.setTooltip ("Save the loop as a .mid file");
     saveBtn.onClick = [this] { saveMidi(); };
+    addAndMakeVisible (mutateBtn);
+    mutateBtn.setTooltip ("Keeps the bass motif and changes a quarter of its steps. GOD MODE starts a new one");
+    mutateBtn.onClick = [this] { mp.mutate(); };
     addAndMakeVisible (genBtn);
     genBtn.setTooltip ("Leave the converted audio and go back to the generator");
     genBtn.onClick = [this] { mp.backToGenerator(); };
@@ -298,6 +336,17 @@ MidiGodEditor::MidiGodEditor (MidiGodProcessor& p)
     swing->setFormatter ([] (double v) { return v < 50.5 ? String ("STRAIGHT") : String (roundToInt (v)) + "%"; });
     seed->setFormatter ([] (double v) { return "#" + String (roundToInt (v)); });
 
+    const auto pink = Colour (0xffff4fd8);
+    styleRow = &addChoiceRow ("rbStyle", {}, pink);
+    rbSync = &addKnob ("rbSync", "SYNCOPATION", pink, "%", 34);
+    rbKick = &addKnob ("rbKick", "KICK AVOID", pink, "%", 34);
+    rbOct = &addKnob ("rbOct", "OCTAVE JUMP", pink, "%", 34);
+    rbDip = &addKnob ("rbDip", "PITCH DIP", blue, "%", 34);
+    rbGlide = &addKnob ("rbGlide", "GLIDE", blue, "%", 34);
+    rbGroove = &addKnob ("rbGroove", "GROOVE", blue, "%", 34);
+    rbVar = &addKnob ("rbVar", "VARIATION", amber, "%", 34);
+    rbEvolve = &addKnob ("rbEvolve", "EVOLVE", pink, "%", 56);
+
     modeRow = &addChoiceRow ("a2mMode", {}, green);
     quantRow = &addChoiceRow ("a2mQuant", {}, green);
     snap = &addToggle ("a2mSnap", "SNAP TO KEY");
@@ -311,7 +360,7 @@ MidiGodEditor::MidiGodEditor (MidiGodProcessor& p)
     vol = &addKnob ("vol", "PREVIEW", blue, "dB", 40);
     vol->setFormatter ([] (double v) { return v <= -59.9 ? String ("OFF") : skazi::formatValue (v, "dB"); });
 
-    setSize (1200, 700);
+    setSize (1200, 858);
 }
 
 void MidiGodEditor::layout()
@@ -339,6 +388,17 @@ void MidiGodEditor::layout()
     for (auto* k : { density, swing, gate, dyn, move, human, octave, seed }) { put (*k, kx, y + 100, 34, 78); kx += 142; }
 
     y = 512;
+    panel ({ 20, y, 1160, 150 }, "ROLL BASS");
+    styleRow->setBounds (120, y + 6, 560, 22);
+    label ({ 700, y + 8, 300, 16 }, "PICK THE BASS ROLE - DRAG MIDI KEEPS GLIDE + DIPS");
+    int rx = 38;
+    for (auto* k : { rbSync, rbKick, rbOct, rbDip, rbGlide, rbGroove, rbVar }) { put (*k, rx, y + 44, 34, 84); rx += 112; }
+    put (*rbEvolve, 838, y + 34, 56, 92);
+    mutateBtn.setBounds (980, y + 44, 186, 44);
+    label ({ 980, y + 98, 190, 14 }, "YOUR SYNTH: MONO + LEGATO GLIDE");
+    label ({ 980, y + 112, 190, 14 }, "PITCH BEND RANGE 12");
+
+    y = 670;
     panel ({ 20, y, 860, 144 }, "AUDIO TO MIDI");
     dropZone.setBounds (30, y + 30, 420, 106);
     label ({ 466, y + 32, 50, 20 }, "MODE");
@@ -374,6 +434,15 @@ void MidiGodEditor::tick()
     const float a = audio ? 0.45f : 1.0f;
     for (Component* c : std::initializer_list<Component*> { barsRow, gridRow, density, swing, gate, dyn, move, human })
         c->setAlpha (a);
+    // ROLL BASS works on the BASS role; AUTO in the house genres keeps the house grooves, where only PITCH DIP applies
+    const bool bassRole = (int) mp.v ("role") == Bass && ! audio;
+    const int genre = (int) mp.v ("genre");
+    const bool houseGroove = (genre == TechHouse || genre == DeepHouse || genre == BassHouse) && (int) mp.v ("rbStyle") == RollAuto && (int) mp.v ("grid") == 0;
+    styleRow->setAlpha (bassRole ? 1.0f : 0.45f);
+    rbDip->setAlpha (bassRole ? 1.0f : 0.45f);
+    for (Component* c : std::initializer_list<Component*> { rbSync, rbKick, rbOct, rbGlide, rbGroove, rbVar, rbEvolve })
+        c->setAlpha (bassRole && ! houseGroove ? 1.0f : 0.45f);
+    mutateBtn.setEnabled (bassRole && ! houseGroove);
     genBtn.setEnabled (audio);
     genBtn.setAlpha (audio ? 1.0f : 0.45f);
     const bool drums = (int) mp.v ("role") == Drums && ! audio;

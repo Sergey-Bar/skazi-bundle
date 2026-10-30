@@ -93,6 +93,50 @@ std::vector<skazi::Preset> build()
             default: break;
         }
     }
+
+    // ROLL BASS: rolling basslines with octave jumps, pitch dips and fills
+    struct Roll { int genre, style, scale, bars; float sync, kick, oct, dip, var, evolve; int mut; const char* name; float glide, groove; };
+    static const Roll rolls[] = {
+        { FullOn,        Roller,  Phrygian,  2, 10, 100, 35,  0, 30,  0,   0, "TLV Roller", 20, 20 },
+        { FullOn,        Gallop,  Freygish,  2, 10, 100, 25,  0, 30,  0,   0, "Goa Gallop", 0, 10 },
+        { ProgPsy,       OffRoll, Minor,     3, 15, 100, 20,  0, 20, 50,   0, "Night Prog Roll", 30, 25 },
+        { PsyTech,       OffRoll, Phrygian,  2, 30, 100, 40, 30, 30,  0,   0, "Psy-Tech Chug", 10, 40 },
+        { FullOn,        Roller,  Minor,     2, 10, 100, 30, 60, 30,  0,   0, "Dipping Roller", 0, 15 },
+        { PsyTech,       OffRoll, Minor,     2, 20, 100, 80,  0, 35,  0,   0, "Octave Bouncer", 0, 20 },
+        { ProgPsy,       Broken,  Phrygian,  2, 60, 100, 30, 20, 50,  0,   0, "Broken Psy", 25, 45 },
+        { HardTechno,    Roller,  Minor,     2, 15, 100, 20, 20, 30,  0,   0, "Hard Roll", 10, 20 },
+        { HardTechno,    OffRoll, Phrygian,  2, 10, 100, 15, 80, 25,  0,   0, "Rumble Dive", 0, 15 },
+        { MelodicTechno, Roller,  Minor,     3, 20, 100, 25, 10, 40, 40,   0, "Melodic Roll", 35, 30 },
+        { Trance,        Offbeat, Minor,     2,  5, 100, 30, 45, 30,  0,   0, "Trance Offbeat Dip", 15, 10 },
+        { TechHouse,     Broken,  Minor,     2, 55, 100, 25, 15, 40,  0,   0, "Tech House Bouncer", 20, 50 },
+        { BassHouse,     OffRoll, Minor,     2, 30, 100, 50, 70, 35,  0,   0, "Bass House Diver", 30, 35 },
+        { DeepHouse,     Broken,  Dorian,    2, 40, 100, 15, 10, 30,  0,   0, "Deep Broken Line", 25, 45 },
+        { FullOn,        Roller,  Phrygian,  3, 15, 100, 40, 30, 40, 85,   0, "Evolving Roller", 25, 30 },
+        { PsyTech,       Roller,  Minor,     2, 70,  60, 30, 20, 40,  0,   0, "Syncopated Roll", 15, 40 },
+        { FullOn,        Roller,  Minor,     2, 40,   0, 20,  0, 30,  0,   0, "Kick Hugger", 0, 20 },
+        { ProgPsy,       Roller,  Phrygian,  2, 25, 100, 35, 25, 60,  0, 137, "Mutant Roll", 30, 35 },
+        { FullOn,        Gallop,  Hungarian, 2, 15, 100, 30, 30, 35,  0,   0, "Hungarian Gallop", 10, 20 },
+        { MelodicTechno, OffRoll, Dorian,    3, 20, 100, 20, 25, 35, 30,   0, "Dark Dorian Roll", 40, 30 },
+    };
+    for (const auto& r : rolls)
+    {
+        auto p = make (r.genre, Bass, r.name);
+        p.category = "ROLL BASS";
+        auto& v = p.values;
+        v["rbStyle"] = (float) r.style;
+        v["scale"] = (float) r.scale;
+        v["bars"] = (float) r.bars;
+        v["rbSync"] = r.sync;
+        v["rbKick"] = r.kick;
+        v["rbOct"] = r.oct;
+        v["rbDip"] = r.dip;
+        v["rbVar"] = r.var;
+        v["rbEvolve"] = r.evolve;
+        v["rbMut"] = (float) r.mut;
+        v["rbGlide"] = r.glide;
+        v["rbGroove"] = r.groove;
+        list.push_back (p);
+    }
     return list;
 }
 } // namespace
@@ -121,6 +165,18 @@ skazi::Preset randomPreset (juce::Random& rng)
     pg.set ("move", std::round (pg.rr (20.0f, 90.0f)));
     pg.set ("human", pg.chance (0.3f) ? std::round (pg.rr (5.0f, 30.0f)) : 0.0f);
     pg.set ("seed", (float) (1 + rng.nextInt (999)));
+    if (role == Bass)
+    {
+        pg.set ("rbStyle", (float) rng.nextInt (NumRollStyles));
+        pg.set ("rbSync", std::round (pg.rr (0.0f, 70.0f)));
+        pg.set ("rbKick", pg.chance (0.85f) ? 100.0f : std::round (pg.rr (0.0f, 80.0f)));
+        pg.set ("rbOct", std::round (pg.rr (0.0f, 70.0f)));
+        pg.set ("rbDip", pg.chance (0.5f) ? std::round (pg.rr (10.0f, 80.0f)) : 0.0f);
+        pg.set ("rbVar", std::round (pg.rr (10.0f, 70.0f)));
+        pg.set ("rbEvolve", pg.chance (0.3f) ? std::round (pg.rr (30.0f, 90.0f)) : 0.0f);
+        pg.set ("rbGlide", pg.chance (0.6f) ? std::round (pg.rr (10.0f, 60.0f)) : 0.0f);
+        pg.set ("rbGroove", std::round (pg.rr (0.0f, 60.0f)));
+    }
     return p;
 }
 } // namespace midigod

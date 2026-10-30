@@ -1,5 +1,6 @@
 #include "ZhugEngine.h"
 #include <cmath>
+#include <algorithm>
 
 namespace zhug
 {
@@ -56,6 +57,27 @@ float shape (int mode, float x, float bias)
     }
 }
 
+float referenceMakeup (const Settings& s)
+{
+    // one cycle of a -18 dB RMS sine through the drive, DC removed, compared with what went in
+    constexpr int N = 256;
+    const float amp = 0.125f * juce::MathConstants<float>::sqrt2;
+    const float drive = s.mode == BitCrush ? 1.0f : juce::Decibels::decibelsToGain (s.driveDb) * (s.multiband ? s.midDrive * 2.0f : 1.0f);
+    const float driveNorm = s.driveDb / 36.0f, q = std::pow (2.0f, 16.0f - driveNorm * 14.0f - 1.0f);
+    float y[N], mean = 0.0f;
+    for (int i = 0; i < N; ++i)
+    {
+        const float x = amp * std::sin (juce::MathConstants<float>::twoPi * (float) i / (float) N);
+        y[i] = s.mode == BitCrush ? std::round (x * q) / q : shape (s.mode, x * drive, s.bias);
+        mean += y[i];
+    }
+    mean /= (float) N;
+    float ms = 0.0f;
+    for (float v : y) ms += (v - mean) * (v - mean);
+    const float rms = std::sqrt (ms / (float) N);
+    return rms > 1.0e-6f ? juce::jlimit (0.05f, 4.0f, 0.125f / rms) : 1.0f;
+}
+
 void Engine::prepare (double sampleRate, int maxBlock)
 {
     sr = sampleRate;
@@ -72,7 +94,8 @@ void Engine::prepare (double sampleRate, int maxBlock)
     dryPos = 0;
     haas.assign ((size_t) (sr * 0.025) + 1, 0.0f);
     haasPos = 0;
-    msIn = msOut = 0; makeup = 1.0f; driveSm = 1.0f;
+    makeup = makeupTarget = 1.0f; driveSm = 1.0f;
+    makeupKey[0] = -1.0f;
 }
 
 void Engine::process (juce::AudioBuffer<float>& buffer, const Settings& s)
@@ -104,11 +127,9 @@ void Engine::process (juce::AudioBuffer<float>& buffer, const Settings& s)
     }
 
     // input level for auto gain and the meter
-    const float msCoef = (float) (1.0 - std::exp (-1.0 / (0.3 * sr)));
     for (int i = 0; i < n; ++i)
     {
         const float a = buffer.getSample (0, i), b = buffer.getSample (numCh - 1, i);
-        msIn += (0.5f * (a * a + b * b) - msIn) * msCoef;
         inPk = juce::jmax (inPk, std::abs (a), std::abs (b));
     }
 
@@ -169,6 +190,21 @@ void Engine::process (juce::AudioBuffer<float>& buffer, const Settings& s)
         uiBand[(size_t) b].store (std::sqrt (bandMs[b]));
     }
 
+    // --- AUTO GAIN: a fixed makeup for the current drive type, drive and bias, measured on a
+    // reference tone (-18 dB RMS sine) through the same drive. It never follows the music, so a quiet
+    // part after a loud one, a gap or a new hit can't make the level jump; knob moves ramp with the drive.
+    {
+        const float key[5] = { (float) s.mode, s.driveDb, s.bias, s.multiband ? s.midDrive : -1.0f, (float) s.autoGain };
+        if (! std::equal (std::begin (key), std::end (key), std::begin (makeupKey)))
+        {
+            const bool first = makeupKey[0] < 0.0f;
+            std::copy (std::begin (key), std::end (key), std::begin (makeupKey));
+            makeupTarget = s.autoGain ? referenceMakeup (s) : 1.0f;
+            if (first) makeup = makeupTarget; // just prepared: start at the right level, no glide
+        }
+    }
+    const float makeupStep = (makeupTarget - makeup) / (float) n;   // moves with DRIVE, which ramps over this same block
+
     // --- tone, auto gain, width, bass mono, haas, mix ---
     const float tiltA = (float) (1.0 - std::exp (-juce::MathConstants<double>::twoPi * 800.0 / sr));
     const float gl = juce::Decibels::decibelsToGain (-s.tone * 6.0f), gh = juce::Decibels::decibelsToGain (s.tone * 6.0f);
@@ -191,11 +227,7 @@ void Engine::process (juce::AudioBuffer<float>& buffer, const Settings& s)
             tiltLp[c] += (y - tiltLp[c]) * tiltA;         // tilt EQ around 800 Hz
             w[c] = tiltLp[c] * gl + (y - tiltLp[c]) * gh;
         }
-        msOut += (0.5f * (w[0] * w[0] + w[1] * w[1]) - msOut) * msCoef;
-        if (s.autoGain && msOut > 1.0e-9f && msIn > 1.0e-9f)
-            makeup += (juce::jlimit (0.05f, 4.0f, std::sqrt (msIn / msOut)) - makeup) * msCoef;
-        else if (! s.autoGain)
-            makeup += (1.0f - makeup) * msCoef;
+        makeup += makeupStep;
         w[0] *= makeup; w[1] *= makeup;
 
         if (numCh > 1)

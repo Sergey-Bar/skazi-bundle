@@ -140,6 +140,7 @@ const std::vector<skazi::ParamDef>& paramDefs()
             { "pitchAmt", "Pitch Env Amount", P::Float, -48, 48, 0, "st", 0.1f },
             { "pitchDec", "Pitch Env Decay", P::Float, 1, 2000, 60, "ms", 0.1f, 0.4f },
 
+            { "lfoOn", "LFO On", P::Bool, 0, 1, 1 },
             { "lfoShape", "LFO Shape", P::Choice, 0, 4, Sine, "", 1, 1, { "SINE", "TRI", "SAW", "SQUARE", "S&H" } },
             { "lfoSync", "LFO Sync", P::Bool, 0, 1, 1 },
             { "lfoRate", "LFO Rate", P::Choice, 0, (float) lfoRates.size() - 1, 3, "", 1, 1, lfoRates },
@@ -201,7 +202,7 @@ Settings Settings::fromValues (const std::function<float (const char*)>& v)
     s.amp = { v ("ampA") * 0.001f, v ("ampD") * 0.001f, v ("ampS") * 0.01f, v ("ampR") * 0.001f };
     s.flt = { v ("fltA") * 0.001f, v ("fltD") * 0.001f, v ("fltS") * 0.01f, v ("fltR") * 0.001f };
     s.envPos = v ("envPos") * 0.01f; s.pitchAmt = v ("pitchAmt"); s.pitchDec = v ("pitchDec") * 0.001f;
-    s.lfoShape = (int) v ("lfoShape"); s.lfoSync = v ("lfoSync") > 0.5f; s.lfoRate = (int) v ("lfoRate"); s.lfoHz = v ("lfoHz");
+    s.lfoOn = v ("lfoOn") > 0.5f; s.lfoShape = (int) v ("lfoShape"); s.lfoSync = v ("lfoSync") > 0.5f; s.lfoRate = (int) v ("lfoRate"); s.lfoHz = v ("lfoHz");
     s.lfoCut = v ("lfoCut") * 0.01f; s.lfoPos = v ("lfoPos") * 0.01f; s.lfoFold = v ("lfoFold") * 0.01f;
     s.mode = (int) v ("mode"); s.glide = v ("glide") * 0.001f; s.velSens = v ("vel") * 0.01f;
     s.chorusOn = v ("chOn") > 0.5f; s.chorusRate = v ("chRate"); s.chorusDepth = v ("chDepth") * 0.01f; s.chorusMix = v ("chMix") * 0.01f;
@@ -429,7 +430,7 @@ void Engine::renderVoices (float* l, float* r, int n, const Settings& s, const s
         if (controlCount-- <= 0)
         {
             controlCount = kCtrl - 1;
-            const float lfo = lfoValue (s.lfoShape);
+            const float lfo = s.lfoOn ? lfoValue (s.lfoShape) : 0.0f; // off: the phase keeps running so it comes back in time
             uiLfo.store (lfo, std::memory_order_relaxed);
             for (auto& v : voices)
                 if (v.active) updateControl (v, s, lfo, warps);

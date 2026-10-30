@@ -113,6 +113,15 @@ inline const juce::StringArray& divNames()
 inline constexpr double divBeats[] = { 0.125, 1.0 / 6.0, 0.25, 1.0 / 3.0, 0.5, 2.0 / 3.0, 0.75, 1.0, 1.5, 2.0, 4.0, 8.0, 16.0 };
 inline constexpr int numDivs = 13;
 
+// The LFO also goes slower: 8, 16 and 32 bar sweeps (added after the shared list, so older settings keep their place)
+inline const juce::StringArray& lfoDivNames()
+{
+    static const juce::StringArray s = [] { auto a = divNames(); a.addArray (juce::StringArray { "8 Bars", "16 Bars", "32 Bars" }); return a; }();
+    return s;
+}
+inline constexpr double lfoDivBeats[] = { 0.125, 1.0 / 6.0, 0.25, 1.0 / 3.0, 0.5, 2.0 / 3.0, 0.75, 1.0, 1.5, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0 };
+inline constexpr int numLfoDivs = 16;
+
 inline const juce::StringArray& distTypeNames()
 {
     static const juce::StringArray s { "Soft Clip", "Hard Clip", "Tube", "Fold", "Bit Crush", "Rectify" };
@@ -183,7 +192,7 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout
     addChoice (ids::lfoShape, "LFO Shape", lfoShapeNames(), ls::Sine);
     addFloat  (ids::lfoRate,  "LFO Rate", logRange (0.01f, 20.0f), 1.0f, hzText);
     addBool   (ids::lfoSync,  "LFO Sync", true);
-    addChoice (ids::lfoDiv,   "LFO Division", divNames(), 10);
+    addChoice (ids::lfoDiv,   "LFO Division", lfoDivNames(), 10);
     addFloat  (ids::lfoDepth, "LFO Amount", { -1.0f, 1.0f }, 0.0f, bipolarText);
     addFloat  (ids::envDepth, "Env Amount", { -1.0f, 1.0f }, 0.0f, bipolarText);
     layout.add (std::make_unique<AudioParameterInt> (ParameterID { ids::seqSeed, 1 }, "Step Pattern", 0, 999, 0));

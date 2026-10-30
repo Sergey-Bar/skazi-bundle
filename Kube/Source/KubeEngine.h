@@ -113,7 +113,7 @@ struct Settings
     int filterType = LP24; float cutoff = 8000, reso = 0.2f, filterEnv = 0, keyTrack = 0.5f, drive = 0;
     Adsr amp, flt;
     float envPos = 0, pitchAmt = 0, pitchDec = 0.05f;
-    int lfoShape = Sine; bool lfoSync = true; int lfoRate = 3; float lfoHz = 2, lfoCut = 0, lfoPos = 0, lfoFold = 0;
+    bool lfoOn = true; int lfoShape = Sine; bool lfoSync = true; int lfoRate = 3; float lfoHz = 2, lfoCut = 0, lfoPos = 0, lfoFold = 0;
     int mode = Poly; float glide = 0, velSens = 0.3f;
     bool chorusOn = false; float chorusRate = 0.4f, chorusDepth = 0.4f, chorusMix = 0.4f;
     bool delayOn = false; int delayTime = 2; float delayFb = 0.35f, delayTone = 0.5f, delayMix = 0.25f;

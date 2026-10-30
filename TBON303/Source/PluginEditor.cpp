@@ -97,6 +97,35 @@ void PresetDisplay::paint (juce::Graphics& g)
 }
 
 //==============================================================================
+void Wheel::paint (juce::Graphics& g)
+{
+    auto r = getLocalBounds().toFloat();
+    auto text = r.removeFromBottom (11.0f);
+    g.setColour (juce::Colours::white.withAlpha (0.85f));
+    g.setFont (juce::FontOptions (9.0f, juce::Font::bold));
+    g.drawFittedText (label, text.toNearestInt().expanded (3, 0), juce::Justification::centred, 1, 0.5f);
+
+    r = r.reduced (1.0f, 1.0f);
+    g.setColour (juce::Colour (0xff0b0a0e));
+    g.fillRoundedRectangle (r, 4.0f);
+    auto wheel = r.reduced (3.0f, 2.0f);
+    juce::ColourGradient shade (juce::Colour (0xff101014), 0.0f, wheel.getY(), juce::Colour (0xff101014), 0.0f, wheel.getBottom(), false);
+    shade.addColour (0.5, juce::Colour (0xff4a4656));
+    g.setGradientFill (shade);
+    g.fillRoundedRectangle (wheel, 3.0f);
+
+    // Ribs scroll with the value, so it reads as a turning wheel
+    const double norm = (getValue() - getMinimum()) / (getMaximum() - getMinimum());
+    const float y = wheel.getBottom() - (float) norm * wheel.getHeight();
+    g.setColour (juce::Colours::black.withAlpha (0.35f));
+    for (float ry = std::fmod (y, 5.0f) + wheel.getY(); ry < wheel.getBottom(); ry += 5.0f)
+        g.drawHorizontalLine ((int) ry, wheel.getX() + 2.0f, wheel.getRight() - 2.0f);
+
+    g.setColour (skin::accentOrange);
+    g.fillRect (juce::Rectangle<float> (wheel.getX(), y - 2.0f, wheel.getWidth(), 4.0f).constrainedWithin (wheel));
+}
+
+//==============================================================================
 SynthPanel::SynthPanel (Skazi303Processor& p)
     : processor (p), grid (p),
       keyboard (p.keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard)
@@ -127,7 +156,7 @@ SynthPanel::SynthPanel (Skazi303Processor& p)
     selector ("sub_oct", "SUB OCTAVE", false);
     knob ("flt_track", "FILTER TRACK", false);
     knob ("acc_decay", "ACCENT DECAY", false);
-    knob ("soft_attack", "SOFT ATTACK", false);
+    knob ("soft_attack", "ATTACK", false);
     knob ("sweep", "SWEEP SPEED", false);
     knob ("pulse_width", "PULSE WIDTH", false);
     knob ("noise", "NOISE", false);
@@ -139,6 +168,37 @@ SynthPanel::SynthPanel (Skazi303Processor& p)
     knob ("f2_mix", "MIX", false);
 
     knob ("vca_decay", "VCA DECAY", false);
+
+    // Envelopes (MODS tab). DECAY knobs there share the SYNTH tab's VCA DECAY and DECAY.
+    knobAs ("env_vca_decay", "vca_decay", "DECAY");
+    knob ("amp_sus", "SUSTAIN", false);
+    knob ("amp_rel", "RELEASE", false);
+    knob ("flt_att", "ATTACK", false);
+    knobAs ("env_decay", "decay", "DECAY");
+    knob ("flt_sus", "SUSTAIN", false);
+    knob ("flt_rel", "RELEASE", false);
+
+    knob ("bend_up", "BEND UP", false);
+    knob ("bend_down", "BEND DOWN", false);
+    selector ("mw_dest", "MOD WHEEL", false);
+    knob ("mw_amt", "MW AMOUNT", false);
+
+    for (auto* w : { &pitchWheel, &modWheel })
+    {
+        w->setSliderStyle (juce::Slider::LinearVertical);
+        w->setTextBoxStyle (juce::Slider::NoTextBox, false, 0, 0);
+        w->setColour (juce::Slider::trackColourId, skin::accentOrange.withAlpha (0.85f));
+        w->setColour (juce::Slider::backgroundColourId, juce::Colour (0xff15131a));
+        addAndMakeVisible (*w);
+    }
+    pitchWheel.setRange (-1.0, 1.0);
+    pitchWheel.setValue (0.0, juce::dontSendNotification);
+    pitchWheel.setTooltip ("PITCH wheel: drag up or down, it springs back. Range: BEND UP / BEND DOWN on the ENV page");
+    pitchWheel.onValueChange = [this] { processor.wheelBend.store ((float) pitchWheel.getValue()); };
+    pitchWheel.onDragEnd = [this] { pitchWheel.setValue (0.0, juce::sendNotificationSync); };
+    modWheel.setRange (0.0, 1.0);
+    modWheel.setTooltip ("MOD wheel: opens the filter and/or adds vibrato (MOD WHEEL on the ENV page)");
+    modWheel.onValueChange = [this] { processor.wheelMod.store ((float) modWheel.getValue()); };
     knob ("fat", "FAT (TUBE)", false);
     knob ("width", "WIDTH", false);
     knob ("volume", "VOLUME", false);
@@ -269,7 +329,9 @@ SynthPanel::SynthPanel (Skazi303Processor& p)
     for (auto id : { "mod_mode", "mod_rate", "mod_depth", "mod_mix", "dly_sync", "dly_fb", "dly_tone", "dly_mix",
                      "rev_size", "rev_damp", "rev_mix", "width" })
         fxItems.push_back (controls[id].get());
-    for (auto id : { "flt_track", "acc_decay", "soft_attack", "sweep", "pulse_width", "noise", "sub_oct" })
+    for (auto id : { "flt_track", "acc_decay", "soft_attack", "sweep", "pulse_width", "noise", "sub_oct",
+                     "env_vca_decay", "amp_sus", "amp_rel", "flt_att", "env_decay", "flt_sus", "flt_rel",
+                     "bend_up", "bend_down", "mw_dest", "mw_amt" })
         modsItems.push_back (controls[id].get());
     for (auto id : { "seq_mode", "int_bpm", "seq_rate", "root", "gen_scale", "seq_len", "swing", "gate_len",
                      "gen_density", "gen_accent", "gen_slide", "gen_octave" })
@@ -313,6 +375,15 @@ Knob& SynthPanel::knob (const juce::String& id, const juce::String& text, bool d
     auto& ref = *k;
     addAndMakeVisible (ref);
     controls[id] = std::move (k);
+    return ref;
+}
+
+Knob& SynthPanel::knobAs (const juce::String& key, const juce::String& id, const juce::String& text)
+{
+    auto k = std::make_unique<Knob> (processor.apvts, id, text, false);
+    auto& ref = *k;
+    addAndMakeVisible (ref);
+    controls[key] = std::move (k);
     return ref;
 }
 
@@ -433,12 +504,21 @@ void SynthPanel::resized()
     // ---- MODS tab: circuit-level tweaks, like the hardware mods people did to their 303s
     {
         const int y = tabTop;
-        auto mods = addSection ("CIRCUIT MODS", { 14, y, contentW - 28, 196 }, 1);
-        placeRow (mods.withTrimmedLeft (10), { "flt_track", "acc_decay", "soft_attack", "sweep", "pulse_width", "noise" }, 196);
+        const int half = (contentW - 38) / 2;
+        auto amp = addSection ("AMP ENVELOPE  /  A  D  S  R", { 14, y, half, 196 }, 1);
+        placeRow (amp.withTrimmedLeft (10), { "soft_attack", "env_vca_decay", "amp_sus", "amp_rel" }, (half - 20) / 4);
+        auto fenv = addSection ("FILTER ENVELOPE  /  A  D  S  R", { 24 + half, y, half, 196 }, 1);
+        placeRow (fenv.withTrimmedLeft (10), { "flt_att", "env_decay", "flt_sus", "flt_rel" }, (half - 20) / 4);
 
         const int y2 = y + 206;
-        auto sub = addSection ("SUB OSCILLATOR  /  -1 OR -2 OCTAVES", { 14, y2, 590, 200 }, 1);
-        controls["sub_oct"]->setBounds (sub.withSizeKeepingCentre (180, 50));
+        auto mods = addSection ("CIRCUIT MODS", { 14, y2, 560, 200 }, 1);
+        placeRow (mods.withTrimmedLeft (5), { "flt_track", "acc_decay", "sweep", "pulse_width", "noise" }, 110);
+        auto sub = addSection ("SUB OCTAVE", { 584, y2, 150, 200 }, 1);
+        controls["sub_oct"]->setBounds (sub.withSizeKeepingCentre (130, 50));
+        auto wheels = addSection ("WHEELS  /  BEND 0-24 UP + DOWN", { 744, y2, contentW - 758, 200 }, 1);
+        placeRow (wheels, { "bend_up", "bend_down" }, 110);
+        controls["mw_dest"]->setBounds (wheels.withTrimmedLeft (220).removeFromLeft (130).withSizeKeepingCentre (126, 50));
+        controls["mw_amt"]->setBounds (wheels.withTrimmedLeft (350).removeFromLeft (110));
     }
 
     // ---- FX tab
@@ -489,7 +569,10 @@ void SynthPanel::resized()
     }
 
     // Keyboard in a black slot along the bottom, visible on both tabs.
-    keyboardFrame = { 14, editorH - keyboardH - 14, contentW - 28, keyboardH };
+    wheelFrame = { 14, editorH - keyboardH - 14, 64, keyboardH };
+    pitchWheel.setBounds (wheelFrame.reduced (6, 5).removeFromLeft (24));
+    modWheel.setBounds (wheelFrame.reduced (6, 5).removeFromRight (24));
+    keyboardFrame = { 86, editorH - keyboardH - 14, contentW - 100, keyboardH };
     keyboard.setBounds (keyboardFrame.reduced (6, 5));
     keyboard.setKeyWidth ((float) (keyboardFrame.getWidth() - 12) / 36.0f); // C2..C7 = 36 white keys
     keyboard.setLowestVisibleKey (36);
@@ -544,6 +627,12 @@ void SynthPanel::showPresetMenu()
 void SynthPanel::timerCallback()
 {
     presetDisplay.setText (processor.getPresetDisplayName());
+
+    // Show MIDI wheel moves on the on-screen wheels (not while the mouse is holding them)
+    if (! pitchWheel.isMouseButtonDown() && std::abs (pitchWheel.getValue() - processor.wheelBend.load()) > 0.002)
+        pitchWheel.setValue (processor.wheelBend.load(), juce::dontSendNotification);
+    if (! modWheel.isMouseButtonDown() && std::abs (modWheel.getValue() - processor.wheelMod.load()) > 0.002)
+        modWheel.setValue (processor.wheelMod.load(), juce::dontSendNotification);
 
     const float a = processor.getFilterActivity();
     if (std::abs (a - shownActivity) > 0.01f)
@@ -600,7 +689,7 @@ void SynthPanel::paint (juce::Graphics& g)
         g.setColour (panel);
         g.setFont (labelFont (13.0f));
         g.drawText (currentTab == 0 ? "ACID BASS LINE  /  DIODE LADDER  /  ACCENT  /  SLIDE  /  14 DRIVE TYPES"
-                    : currentTab == 1 ? "CIRCUIT MODS  /  TRACKING  /  ACCENT  /  ATTACK  /  SWEEP  /  PULSE  /  NOISE  /  SUB"
+                    : currentTab == 1 ? "AMP + FILTER ENVELOPES (ADSR)  /  CIRCUIT MODS  /  TRACKING  /  ACCENT  /  SWEEP  /  PULSE  /  NOISE  /  SUB"
                     : currentTab == 2 ? "EFFECTS  /  CHORUS  /  FLANGER  /  BBD DELAY  /  REVERB  /  STEREO WIDENER"
                                       : "COMPUTER CONTROLLED  /  16 STEPS  /  PITCH  /  ACCENT  /  SLIDE  /  GENERATOR",
                     strip, juce::Justification::centred);
@@ -643,6 +732,7 @@ void SynthPanel::paint (juce::Graphics& g)
     // Keyboard slot
     g.setColour (panelLine);
     g.fillRoundedRectangle (keyboardFrame.toFloat().expanded (2.0f), 7.0f);
+    g.fillRoundedRectangle (wheelFrame.toFloat().expanded (2.0f), 7.0f);
 }
 
 //==============================================================================

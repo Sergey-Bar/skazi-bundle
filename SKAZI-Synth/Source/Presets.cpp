@@ -1828,6 +1828,48 @@ namespace
     }
 
     //==========================================================================
+    // Factory presets: after the style recipe, at least 2 of the 5 sections are rolled again on the preset's own seed,
+    // so presets next to each other in a folder don't share one sound. The groove, notes, voice mode
+    // and register of the recipe stay, so every preset still fits its folder.
+    void vary (Ctx& c, int gen, int index)
+    {
+        // presets whose first roll played too quietly (RenderTest --calibrate) take the next roll
+        static const int reroll[] = { 13, 120, 328, 2083, 3342 };
+        if (std::find (std::begin (reroll), std::end (reroll), index) != std::end (reroll))
+            c.rng.discard (7);
+        const Role role = roleFor (gen, c);
+        const bool sequenced = c.get ("seq_on") > 0.5f;
+        const float oct1 = c.get ("osc1_oct");
+        bool pick[5];
+        int n = 0;
+        for (auto& b : pick) { b = c.chance (0.5f); n += b ? 1 : 0; }
+        while (n < 2) { auto& b = pick[c.ri (0, 4)]; if (! b) { b = true; ++n; } }
+        if (pick[0])
+        {
+            rollOscillators (c, role);
+            const float shift = oct1 - c.get ("osc1_oct");   // keep the recipe's register, osc 2 moves with it
+            c.set ("osc1_oct", oct1);
+            c.set ("osc2_oct", juce::jlimit (-3.f, 3.f, c.get ("osc2_oct") + shift));
+        }
+        if (pick[1])
+        {
+            rollFilters (c, role);
+            if (role == RBass) c.set ("flt1_cutoff", std::max (c.get ("flt1_cutoff"), 260.f));   // a sub-low cutoff on top of the groove goes silent
+        }
+        // mono, legato and sequenced sounds keep the recipe's amp envelope: it is set for the groove
+        if (pick[2])
+        {
+            const bool keepAmp = sequenced || c.get ("mode") > 0.5f;
+            const float a = c.get ("env1_a"), d = c.get ("env1_d"), s = c.get ("env1_s"), r = c.get ("env1_r");
+            rollEnvelopes (c, role, sequenced);   // always rolled, so the tag dry run draws the same numbers
+            if (keepAmp) c.env (1, a, d, s, r);
+        }
+        if (pick[3]) rollLfos (c, role);
+        if (pick[4]) rollEffects (c, role);
+        c.tag ("varied");
+    }
+
+    //==========================================================================
     // 1.3: no preset is dry. Like the big VA workstations, every sound leaves with its effects on:
     // a stereo mod effect, a tempo delay and a room / hall. Basses get smaller amounts and bass
     // mono, so the low end stays tight while the top gets wide. Runs after everything else.
@@ -1978,6 +2020,7 @@ namespace
                     juce::StringArray t;
                     Ctx ctx { nullptr, std::mt19937 (seedFor (index)), &t };
                     run (cat.gen, ctx, l);
+                    vary (ctx, cat.gen, index);
                     enhance (ctx, cat.gen);
                     if (! t.contains ("mono") && ! t.contains ("poly")) t.add ("poly");
                     t.sort (true);
@@ -2062,6 +2105,7 @@ namespace Presets
 
         Ctx ctx { &p, std::mt19937 (seedFor (index)), nullptr };
         run (cats[c].gen, ctx, l);
+        vary (ctx, cats[c].gen, index);
         enhance (ctx, cats[c].gen);
 
         constexpr int numGains = (int) (sizeof (presetGains) / sizeof (presetGains[0]));

@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "../../Common/UpdateNotice.h"
 #include "PluginEditor.h"
 #include "Presets.h"
 
@@ -30,7 +31,7 @@ void TahiniProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
     finishBlock (buffer); // smooth preset changes
 }
 
-juce::AudioProcessorEditor* TahiniProcessor::createEditor() { return new TahiniEditor (*this); }
+juce::AudioProcessorEditor* TahiniProcessor::createEditor() { return skazi::withUpdateNotice (new TahiniEditor (*this)); }
 
 const std::vector<skazi::Preset>& TahiniProcessor::presetList() const { return tahini::presets(); }
 skazi::Preset TahiniProcessor::randomPreset (juce::Random& rng) const { return tahini::randomPreset (rng); }

@@ -42,9 +42,9 @@ target_sources(Shaksuka PRIVATE
     Source/ChopEngine.cpp
     Source/Presets.cpp)
 
-# Drop Resources/skazi_logo.png in and re-run CMake to use the real logo;
+# The SKAZI logo (../Resources/skazi_logo.png), shared with the other plugins;
 # without it the editor draws a vector stand-in.
-set(SHAK_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/Resources/skazi_logo.png")
+set(SHAK_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/../Resources/skazi_logo.png")
 set(SHAK_LOGO_FOUND OFF)
 if(EXISTS "${SHAK_LOGO}")
     set(SHAK_LOGO_FOUND ON)

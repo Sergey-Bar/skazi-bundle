@@ -257,7 +257,7 @@ inline void generate (int bank, juce::Random& r, juce::AudioProcessorValueTreeSt
             set (ids::filterDrive, rnd (0.0f, 0.7f));
             set (ids::lfoShape, (float) r.nextInt (ls::count));
             set (ids::lfoSync, chance (0.5f) ? 1.0f : 0.0f);
-            set (ids::lfoDiv, (float) r.nextInt (numDivs));
+            set (ids::lfoDiv, (float) r.nextInt (numLfoDivs));
             set (ids::lfoRate, logRnd (0.05f, 15.0f));
             set (ids::lfoDepth, rnd (-1.0f, 1.0f));
             set (ids::envDepth, rnd (-0.8f, 0.8f));

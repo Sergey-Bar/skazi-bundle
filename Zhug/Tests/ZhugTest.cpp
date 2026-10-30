@@ -77,12 +77,25 @@ int main()
         expect (clean (o.L) && rms (o.L, 24000) > 0.05 && thd > 0.03, juce::String ("drive type ") + names[m], "distortion " + juce::String (thd * 100, 1) + "%");
     }
 
-    // auto gain keeps the level close to the input
+    // auto gain keeps a -18 dB RMS sine (its reference level) at its level
     {
+        const auto ref = [] (int i) { const float x = 0.177f * (float) std::sin (twoPi * 220.0 * i / sr); return std::make_pair (x, x); };
         auto s = base; s.driveDb = 30.0f; s.autoGain = true;
-        const auto o = run (s, 96000, sine);
+        const auto o = run (s, 96000, ref);
         const double d = db (rms (o.L, 48000), rms (o.inL, 48000));
         expect (std::abs (d) < 2.5, "AUTO GAIN matches input level at +30 dB drive", juce::String (d, 2) + " dB");
+    }
+
+    // auto gain never jumps: a quiet part right after a loud one comes in at its own level
+    for (int m = 0; m < NumModes; ++m)
+    {
+        if (m == BitCrush) continue; // crushing a quiet signal breaks it into steps by design
+        auto s = base; s.mode = m; s.driveDb = 24.0f; s.autoGain = true; s.bias = 0.0f; // bias adds level-dependent DC by design; this checks the gain
+        const auto loudThenQuiet = [] (int i) { const float x = (i < 48000 ? 0.5f : 0.01f) * (float) std::sin (twoPi * 110.0 * i / sr); return std::make_pair (x, x); };
+        const auto o = run (s, 144384, loudThenQuiet);
+        auto part = [&] (int a, int z) { double m2 = 0; for (int i = a; i < z; ++i) m2 += (double) o.L[(size_t) i] * o.L[(size_t) i]; return std::sqrt (m2 / (z - a)); };
+        const double jump = db (part (48500, 50900), part (120000, 144000));
+        expect (jump < 3.0, juce::String ("no level jump after a loud part, ") + names[m], juce::String (jump, 1) + " dB");
     }
 
     // width 0 is mono, width 200 widens

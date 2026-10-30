@@ -46,6 +46,10 @@ namespace
         if (name == "MIDI GOD")       return "MIDI pattern generator + audio to MIDI";
         if (name == "KUBE")           return "Psytrance wavetable synth";
         if (name == "QUAZI")          return "4-band fuzz + stereo width + post EQ";
+        if (name == "SKACID")         return "Acid bassline synth + evolving sequencer";
+        if (name == "SKILTER")        return "Morphing filter + LFO, envelope, step seq";
+        if (name == "SKWIDE")         return "Phase-safe stereo imager + Haas super wide";
+        if (name == "SKAZI REVERB")   return "Mega reverb machine: 10 algorithms, reverse, tail filter";
         return "Plugin";
     }
 
@@ -130,6 +134,22 @@ namespace
             }
             startMenu().getChildFile ("SKAZI\\SKAZI.lnk").deleteFile();
             File ("C:\\Users\\Public\\Desktop\\SKAZI.lnk").deleteFile();
+        }
+        if (names.contains ("SKACID"))
+        {
+            // The SKACID test build came with its own Inno Setup installer
+            const String inno = "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{6C2E8A14-9B7D-4F3A-A5E1-5CA21F0E0A1D}_is1";
+            const auto cmd = WindowsRegistry::getValue (inno + "\\UninstallString");
+            if (cmd.isNotEmpty())
+            {
+                ChildProcess p;
+                if (p.start (cmd + " /VERYSILENT /SUPPRESSMSGBOXES /NORESTART", 0))
+                {
+                    p.waitForProcessToFinish (60000);
+                    for (int i = 0; i < 600 && WindowsRegistry::keyExists (inno); ++i)
+                        Thread::sleep (100);
+                }
+            }
         }
         if (names.contains ("SHAKSUKA"))
         {

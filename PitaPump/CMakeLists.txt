@@ -42,8 +42,8 @@ target_sources(PitaPump PRIVATE
     Source/PumpEngine.cpp
     Source/Presets.cpp)
 
-# Drop Resources/skazi_logo.png in and re-run CMake to use the real logo
-set(PUMP_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/Resources/skazi_logo.png")
+# The SKAZI logo (../Resources/skazi_logo.png), shared with the other plugins
+set(PUMP_LOGO "${CMAKE_CURRENT_SOURCE_DIR}/../Resources/skazi_logo.png")
 if(EXISTS "${PUMP_LOGO}")
     juce_add_binary_data(PitaPumpData SOURCES "${PUMP_LOGO}")
     target_link_libraries(PitaPump PRIVATE PitaPumpData)

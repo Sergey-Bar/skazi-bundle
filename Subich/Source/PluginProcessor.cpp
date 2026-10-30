@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "../../Common/UpdateNotice.h"
 #include "PluginEditor.h"
 #include "Presets.h"
 
@@ -58,7 +59,7 @@ void SubichProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
     midi.clear();
 }
 
-juce::AudioProcessorEditor* SubichProcessor::createEditor() { return new SubichEditor (*this); }
+juce::AudioProcessorEditor* SubichProcessor::createEditor() { return skazi::withUpdateNotice (new SubichEditor (*this)); }
 
 const std::vector<skazi::Preset>& SubichProcessor::presetList() const { return subich::presets(); }
 skazi::Preset SubichProcessor::randomPreset (juce::Random& rng) const { return subich::randomPreset (rng); }

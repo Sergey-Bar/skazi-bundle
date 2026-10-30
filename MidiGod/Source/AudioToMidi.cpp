@@ -1,3 +1,4 @@
+#include <map>
 #include "AudioToMidi.h"
 #include <juce_dsp/juce_dsp.h>
 #include <algorithm>
@@ -95,7 +96,9 @@ std::vector<int> pickPeaks (const std::vector<float>& f, float delta, int minGap
 double roundUpToBars (double beats) { return juce::jlimit (4.0, 1024.0, std::ceil (beats / 4.0 - 1.0e-6) * 4.0); }
 
 //==============================================================================
-// Melody and bass: YIN pitch per frame, split into notes on silence, pitch jumps and onsets
+// Melody and bass: YIN pitch per frame, split into notes on silence, pitch jumps and onsets.
+// Glides and pitch dives are not notes: a note's pitch is where it settles, and the moving frames
+// go to the note they leave from.
 std::vector<Note> trackMonophonic (const std::vector<float>& mono, double srIn, bool bass, float sens, double bpm, const std::atomic<bool>* cancel)
 {
     const double sr = bass ? 5512.5 : 11025.0;
@@ -190,16 +193,34 @@ std::vector<Note> trackMonophonic (const std::vector<float>& mono, double srIn, 
     const double secPerFrame = hop / sr, beatsPerSec = bpm / 60.0;
     const double frameTime0 = (W / 2.0) / sr;
     std::vector<Note> notes;
+    int lastEnd = -10; // frame where the last note ended
     auto close = [&] (int a, int b)
     {
-        if (b - a < 3) return;
-        std::vector<float> vals;
+        // the pitch is the semitone the segment holds longest in one run, so glide-ins and dives don't pull it
+        std::map<int, int> run;
+        int best = -1, bestRun = 0, cur = -1, len = 0;
         float peak = 0.0f;
         for (int m = a; m < b; ++m)
-            if (voiced[(size_t) m]) { vals.push_back (smooth[(size_t) m]); peak = juce::jmax (peak, rms[(size_t) m]); }
-        if (vals.size() < 3) return;
-        std::nth_element (vals.begin(), vals.begin() + (long) (vals.size() / 2), vals.end());
-        int p = juce::roundToInt (vals[vals.size() / 2]);
+        {
+            if (! voiced[(size_t) m]) { cur = -1; continue; }
+            peak = juce::jmax (peak, rms[(size_t) m]);
+            const int q = juce::roundToInt (smooth[(size_t) m]);
+            len = q == cur ? len + 1 : 1;
+            cur = q;
+            if (len > bestRun) { bestRun = len; best = q; }
+        }
+        if (bestRun < 3)
+        {
+            // never settled: a glide or a dive on the end of the note before, which keeps sounding through it
+            if (! notes.empty() && a - lastEnd <= 2)
+            {
+                notes.back().length = (frameTime0 + (b - 0.5) * secPerFrame) * beatsPerSec - notes.back().start;
+                lastEnd = b;
+            }
+            return;
+        }
+        lastEnd = b;
+        int p = best;
         while (bass && p < 24) p += 12;
         for (int m = juce::jmax (0, a - 2); m <= juce::jmin (numFrames - 1, a + 1); ++m)
             if (onset[(size_t) m]) { a = m; break; }
@@ -209,7 +230,10 @@ std::vector<Note> trackMonophonic (const std::vector<float>& mono, double srIn, 
                            juce::jlimit (20, 127, juce::roundToInt (127.0f + db * 2.2f)) });
     };
 
-    int start = -1, silent = 0, change = 0;
+    // after a new note starts, its pitch may still be sliding (legato glide, pluck attack): while `settle` runs,
+    // the reference pitch follows the latest steady frames instead of splitting again
+    const int settleFrames = juce::jmax (3, (int) std::ceil (0.07 / secPerFrame));
+    int start = -1, silent = 0, change = 0, settle = 0;
     std::vector<float> vals;
     for (int n = 0; n < numFrames; ++n)
     {
@@ -220,14 +244,22 @@ std::vector<Note> trackMonophonic (const std::vector<float>& mono, double srIn, 
         }
         silent = 0;
         const float p = smooth[(size_t) n];
-        if (start < 0) { start = n; vals.assign (1, p); change = 0; continue; }
+        if (start < 0) { start = n; vals.assign (1, p); change = 0; settle = settleFrames / 2; continue; }
+        if (onset[(size_t) n] && n - start >= 3) { close (start, n); start = n; vals.assign (1, p); change = 0; settle = settleFrames / 2; continue; }
+        if (settle > 0)
+        {
+            --settle;
+            if (std::abs (p - vals.back()) < 0.35f) vals.push_back (p);
+            else vals.assign (1, p);
+            continue;
+        }
         std::vector<float> recent (vals.end() - (long) std::min (vals.size(), (size_t) 7), vals.end());
         std::nth_element (recent.begin(), recent.begin() + (long) (recent.size() / 2), recent.end());
         const float ref = recent[recent.size() / 2];
-        if (onset[(size_t) n] && n - start >= 3) { close (start, n); start = n; vals.assign (1, p); change = 0; continue; }
         if (std::abs (p - ref) > 0.8f)
         {
-            if (++change >= 3) { close (start, n - 2); start = n - 2; vals = { smooth[(size_t) n - 2], smooth[(size_t) n - 1], p }; change = 0; }
+            // the new note starts where the pitch left the old one: that is where a glide's note-on was
+            if (++change >= 3) { close (start, n - 2); start = n - 2; vals.assign (1, p); change = 0; settle = settleFrames; }
             continue;
         }
         change = 0;

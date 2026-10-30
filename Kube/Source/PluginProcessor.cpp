@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "../../Common/UpdateNotice.h"
 #include "PluginEditor.h"
 #include "Presets.h"
 
@@ -27,7 +28,7 @@ void KubeProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBu
     finishBlock (buffer); // smooth preset changes
 }
 
-juce::AudioProcessorEditor* KubeProcessor::createEditor() { return new KubeEditor (*this); }
+juce::AudioProcessorEditor* KubeProcessor::createEditor() { return skazi::withUpdateNotice (new KubeEditor (*this)); }
 
 void KubeProcessor::setUserTable (int osc, std::unique_ptr<kube::Wavetable> table)
 {

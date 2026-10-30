@@ -84,6 +84,8 @@ private:
     struct RawParams
     {
         std::atomic<float> *wave, *tune, *fine, *drift, *subLevel, *subWave, *subOct, *vcaDecay, *fat;
+        std::atomic<float> *bendUp, *bendDown, *mwDest, *mwAmt;
+        std::atomic<float> *ampSus, *ampRel, *fltAtt, *fltSus, *fltRel;
         std::atomic<float> *fltTrack, *accDecay, *softAttack, *sweep, *pulseWidth, *noise;
         std::atomic<float> *cutoff, *reso, *envMod, *decay, *accent, *slideTime;
         std::atomic<float> *f2Type, *f2Cutoff, *f2Reso, *f2Vowel, *f2Mix;
@@ -112,6 +114,7 @@ private:
     std::array<int, 16> heldNotes {};
     int heldCount = 0;
     int midiTranspose = 0;
+    void applyWheels();
     void applyPreset (const s303::Preset&, bool soundOnly);
     void levelCurrentSound (int factoryIndex = -1);
     float measureLevelDb();
@@ -127,6 +130,9 @@ private:
     double internalPpq = 0.0;
     juce::LinearSmoothedValue<float> outGain;
 
+public:
+    std::atomic<float> wheelBend { 0.0f }, wheelMod { 0.0f }; // -1..1 and 0..1, from MIDI or the on-screen wheels
+private:
     std::atomic<int> currentStep { -1 };
     std::atomic<float> filterActivity { 0.0f };
 

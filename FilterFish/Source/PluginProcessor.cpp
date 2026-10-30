@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "../../Common/UpdateNotice.h"
 #include "PluginEditor.h"
 #include "Presets.h"
 
@@ -118,7 +119,7 @@ void GlitchMagmaProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
 
     // ---- Filter with LFO + envelope modulation
     const bool lfoSync = on (ids::lfoSync);
-    const double lfoBeats = beatsOf (ids::lfoDiv);
+    const double lfoBeats = lfoDivBeats[juce::jlimit (0, numLfoDivs - 1, index (ids::lfoDiv))];
     lfo.setShape (index (ids::lfoShape));
     lfo.setSeed (index (ids::seqSeed));
     lfo.setFrequency (lfoSync ? bpm / (60.0 * lfoBeats) : (double) param (ids::lfoRate));
@@ -303,6 +304,6 @@ void GlitchMagmaProcessor::setStateInformation (const void* data, int sizeInByte
         }
 }
 
-juce::AudioProcessorEditor* GlitchMagmaProcessor::createEditor() { return new GlitchMagmaEditor (*this); }
+juce::AudioProcessorEditor* GlitchMagmaProcessor::createEditor() { return skazi::withUpdateNotice (new GlitchMagmaEditor (*this)); }
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() { return new GlitchMagmaProcessor(); }

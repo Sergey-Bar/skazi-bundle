@@ -45,7 +45,8 @@ private:
     juce::AudioBuffer<float> dry, work;
     std::vector<float> dryDelay[2]; int dryPos = 0;
     std::vector<float> haas; int haasPos = 0;
-    float msIn = 0, msOut = 0, makeup = 1.0f;
+    float makeup = 1.0f, makeupTarget = 1.0f;
+    float makeupKey[5] { -1, -1, -1, -1, -1 };   // settings the current AUTO GAIN target was measured for
     float tiltLp[2] {}, dc[2] {}, dcX[2] {}, sideIc1 = 0, sideIc2 = 0;
     float crushHold[2] {}; int crushCount = 0;
     float driveSm = 1.0f;

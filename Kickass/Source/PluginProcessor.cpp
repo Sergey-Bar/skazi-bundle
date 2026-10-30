@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "../../Common/UpdateNotice.h"
 #include "PluginEditor.h"
 #include <cstring>
 
@@ -397,6 +398,6 @@ juce::String KickassProcessor::getPresetDisplayName() const
     return isPresetModified() ? name + " *" : name;
 }
 
-juce::AudioProcessorEditor* KickassProcessor::createEditor() { return new KickassEditor (*this); }
+juce::AudioProcessorEditor* KickassProcessor::createEditor() { return skazi::withUpdateNotice (new KickassEditor (*this)); }
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() { return new KickassProcessor(); }

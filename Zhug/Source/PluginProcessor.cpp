@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "../../Common/UpdateNotice.h"
 #include "PluginEditor.h"
 #include "Presets.h"
 
@@ -31,7 +32,7 @@ void ZhugProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBu
     finishBlock (buffer); // smooth preset changes
 }
 
-juce::AudioProcessorEditor* ZhugProcessor::createEditor() { return new ZhugEditor (*this); }
+juce::AudioProcessorEditor* ZhugProcessor::createEditor() { return skazi::withUpdateNotice (new ZhugEditor (*this)); }
 
 const std::vector<skazi::Preset>& ZhugProcessor::presetList() const { return zhug::presets(); }
 skazi::Preset ZhugProcessor::randomPreset (juce::Random& rng) const { return zhug::randomPreset (rng); }

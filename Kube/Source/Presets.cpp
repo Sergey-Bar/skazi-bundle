@@ -1,6 +1,7 @@
 #include "Presets.h"
 #include "KubeEngine.h"
 #include "PresetTrims.h"
+#include <algorithm>
 
 namespace kube
 {
@@ -135,6 +136,94 @@ namespace
         g.set ("revOn", 1); g.range ("revSize", 70, 98); g.range ("revMix", 30, 50); g.range ("out", -12, -8);
     }
 
+    // WILD folders: 200 crazy sounds. Every part of KUBE is rolled: any of the 24 tables on both
+    // oscillators, both warp slots, FM / RM / AM from osc B, fold, noise, every filter, the pitch
+    // envelope and a synced LFO on cutoff, position and fold. The role keeps each one playable.
+    enum WildRole { WildBass, WildLead, WildMotion, WildFx };
+
+    float logRange (skazi::PresetGen& g, float lo, float hi) { return std::round (lo * std::pow (hi / lo, g.r.nextFloat())); }
+
+    void wild (skazi::PresetGen& g, int role)
+    {
+        const int tables = 24, warps = (int) WarpRm;
+        g.set ("aTable", (float) g.r.nextInt (tables)); g.range ("aPos", 0, 100);
+        g.set ("aUni", (float) (role == WildBass ? g.pick ({ 1, 1, 2, 3 }) : g.pick ({ 1, 3, 5, 7, 9, 12, 16 })));
+        g.range ("aDetune", 5, 60); g.range ("aWidth", 40, 100); g.range ("aBlend", 30, 100);
+        if (g.chance (0.75f)) { g.set ("aWarp1", (float) (1 + g.r.nextInt (warps))); g.range ("aWarp1Amt", 10, 80); }
+        if (g.chance (0.4f))  { g.set ("aWarp2", (float) (1 + g.r.nextInt (warps))); g.range ("aWarp2Amt", 10, 70); }
+
+        if (g.chance (0.75f))
+        {
+            g.set ("bOn", 1); g.set ("bTable", (float) g.r.nextInt (tables)); g.range ("bPos", 0, 100);
+            g.set ("bOct", (float) g.pick ({ -1, 0, 0, 1, 2 })); g.set ("bSemi", (float) g.pick ({ 0, 0, 0, 7, 12, -12, 5, 3 }));
+            g.range ("bFine", -20, 20); g.range ("bLevel", 15, 75);
+            g.set ("bUni", (float) g.pick ({ 1, 1, 3, 5, 7 })); g.range ("bDetune", 5, 45);
+            if (g.chance (0.45f))
+            {
+                // osc B as a modulator: FM, ring or amplitude mod on A, often with B itself muted
+                g.set ("aWarp1", (float) g.pick ({ WarpFm, WarpRm, WarpAm })); g.range ("aWarp1Amt", 15, 75);
+                if (g.chance (0.5f)) g.set ("bLevel", 0);
+            }
+        }
+        if (g.chance (0.4f)) g.range ("fold", 5, 70);
+        if (g.chance (0.3f)) g.range ("noise", 3, 30);
+        if (g.chance (0.4f)) g.range ("sub", 10, 60);
+
+        g.set ("fltType", (float) g.pick ({ LP24, LP24, LP24, LP12, LP12, BandPass, HighPass, Notch }));
+        g.range ("reso", 5, 88); g.range ("fltEnv", -40, 90); g.range ("keyTrk", 0, 80); g.range ("drive", 0, 70);
+        if (g.chance (0.35f)) g.range ("envPos", -80, 80);
+        if (g.chance (role == WildFx ? 0.7f : 0.3f)) { g.range ("pitchAmt", -36, 36); g.range ("pitchDec", 15, role == WildFx ? 1800.0f : 300.0f); }
+
+        const bool moving = role == WildMotion || g.chance (0.5f);
+        if (moving)
+        {
+            g.set ("lfoSync", 1); g.set ("lfoShape", (float) g.r.nextInt (5)); g.set ("lfoRate", (float) g.r.nextInt (13));
+            g.range ("lfoCut", -70, 70); g.range ("lfoPos", -80, 80);
+            if (g.chance (0.4f)) g.range ("lfoFold", 10, 70);
+        }
+
+        switch (role)
+        {
+            case WildBass:
+                g.set ("mode", (float) g.pick ({ Mono, Mono, Legato })); g.range ("glide", 0, 90); g.set ("aOct", -1); g.set ("bOct", -1);
+                g.set ("aRand", 0); g.set ("bRand", 0);
+                if (g.v["fltType"] == HighPass || g.v["fltType"] == Notch) g.set ("fltType", LP24); // basses keep their low end
+                g.set ("cutoff", logRange (g, 140, 1500));
+                g.set ("fltA", 0); g.range ("fltD", 60, 400); g.range ("fltS", 0, 40); g.range ("fltR", 30, 200);
+                g.set ("ampA", 0.5f); g.range ("ampD", 120, 600); g.range ("ampS", 0, 70); g.range ("ampR", 25, 150);
+                g.set ("vel", 10);
+                break;
+            case WildLead:
+                g.set ("mode", (float) g.pick ({ Poly, Poly, Mono, Legato })); g.range ("glide", 0, 120);
+                g.set ("cutoff", logRange (g, 900, 12000));
+                g.range ("fltA", 0, 150); g.range ("fltD", 150, 1200); g.range ("fltS", 20, 80);
+                g.range ("ampA", 0, 60); g.range ("ampD", 300, 1500); g.range ("ampS", 50, 100); g.range ("ampR", 100, 900);
+                break;
+            case WildMotion:
+                g.set ("mode", (float) g.pick ({ Poly, Mono, Legato })); g.range ("glide", 0, 80);
+                g.set ("cutoff", logRange (g, 300, 6000));
+                g.range ("fltA", 0, 400); g.range ("fltD", 200, 2000); g.range ("fltS", 20, 90);
+                g.range ("ampA", 0, 300); g.range ("ampD", 400, 2000); g.range ("ampS", 60, 100); g.range ("ampR", 150, 1500);
+                break;
+            default:
+                g.set ("mode", (float) g.pick ({ Poly, Poly, Mono }));
+                g.set ("cutoff", logRange (g, 400, 9000));
+                g.range ("fltA", 0, 2000); g.range ("fltD", 200, 3000); g.range ("fltS", 0, 90); g.range ("fltR", 300, 4000);
+                g.range ("ampA", 0, 2500); g.range ("ampD", 300, 3000); g.range ("ampS", 20, 100); g.range ("ampR", 600, 5000);
+                break;
+        }
+
+        const bool bassy = role == WildBass;
+        if (g.chance (bassy ? 0.25f : 0.6f))
+        {
+            g.set ("dlyOn", 1); g.set ("dlyTime", (float) g.r.nextInt (8)); g.range ("dlyFb", 20, bassy ? 45.0f : 75.0f);
+            g.range ("dlyTone", 20, 90); g.range ("dlyMix", 8, bassy ? 18.0f : 40.0f);
+        }
+        if (g.chance (bassy ? 0.15f : 0.6f)) { g.set ("revOn", 1); g.range ("revSize", 30, 98); g.range ("revDamp", 10, 80); g.range ("revMix", 8, bassy ? 15.0f : 45.0f); }
+        if (g.chance (bassy ? 0.1f : 0.35f)) { g.set ("chOn", 1); g.range ("chDepth", 20, 80); g.range ("chMix", 20, 60); }
+        g.range ("out", -10, -5);
+    }
+
     struct Category { const char* name; void (*style) (skazi::PresetGen&); };
 
     const std::vector<Category>& categories()
@@ -193,6 +282,22 @@ namespace
                 list.push_back (std::move (p));
             }
 
+        // the WILD folders come after every older preset, so those keep their numbers and trims
+        const char* wildNames[] = { "WILD BASS", "WILD LEAD", "WILD MOTION", "WILD FX" };
+        for (int role = 0; role < 4; ++role)
+            for (int i = 0; i < 50; ++i)
+            {
+                const int n = role * 50 + i;
+                // rolls that came out too quiet to level (KubeTest) take another roll
+                static const int reroll[] = { 0, 7, 11, 27, 33, 59, 67, 81, 118, 179, 187 };
+                const int salt = std::find (std::begin (reroll), std::end (reroll), n) != std::end (reroll) ? 1 : 0;
+                juce::Random r ((juce::int64) n * 104729 + 2026 + salt * 7);
+                skazi::Preset p { skazi::presetName (n + 2000), wildNames[role], defs };
+                skazi::PresetGen gen { r, p.values };
+                wild (gen, role);
+                list.push_back (std::move (p));
+            }
+
         for (size_t i = 0; i < list.size() && i < std::size (kPresetTrims); ++i)
             list[i].values["out"] = juce::jlimit (-36.0f, 6.0f, list[i].values["out"] + kPresetTrims[i]);
         return list;
@@ -212,7 +317,8 @@ skazi::Preset randomPreset (juce::Random& rng)
     skazi::Preset p { "Random", cat.name, skazi::defaultValues (paramDefs()) };
     juce::Random r (rng.nextInt64());
     skazi::PresetGen gen { r, p.values };
-    cat.style (gen);
+    if (rng.nextBool()) wild (gen, rng.nextInt (4)); // half the rolls are WILD
+    else cat.style (gen);
     return p;
 }
 } // namespace kube

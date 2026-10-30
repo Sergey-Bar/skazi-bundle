@@ -99,10 +99,10 @@ const std::vector<skazi::ParamDef>& paramDefs()
         { "decay", "Decay", P::Float, 0.2f, 20, 4.2f, "s", 0.01f, 0.4f },
         { "predelay", "Pre-Delay", P::Float, 0, 250, 30, "ms", 0.1f },
         { "damp", "Damping", P::Float, 0, 100, 50, "%", 0.1f },
-        { "width", "Width", P::Float, 0, 100, 90, "%", 0.1f },
+        { "width", "Width", P::Float, 0, 100, 100, "%", 0.1f },
         { "duck", "Duck Amount", P::Float, 0, 100, 60, "%", 0.1f },
         { "duckrel", "Duck Release", P::Float, 20, 1000, 200, "ms", 1, 0.5f },
-        { "dmix", "Delay Mix", P::Float, 0, 100, 40, "%", 0.1f },
+        { "dmix", "Delay Mix", P::Float, 0, 100, 55, "%", 0.1f },
         { "rmix", "Reverb Mix", P::Float, 0, 100, 30, "%", 0.1f },
         { "dry", "Dry Signal", P::Bool, 0, 1, 1 },
         { "gain", "Output", P::Float, -24, 12, 0, "dB", 0.1f },
@@ -163,7 +163,10 @@ void Engine::process (juce::AudioBuffer<float>& buffer, const Settings& s, juce:
     uiBpm.store (ht.bpm);
     const double target = juce::jlimit (1.0, sr * 4.0, skazi::noteBeats (s.time) * 60.0 / ht.bpm * sr);
     const bool dual = s.mode == Dual, multi = s.mode == MultiTap;
-    const double targetR = dual ? juce::jmax (1.0, target * 0.75) : target; // DUAL: right side 3/4 of the left (1/4 -> 3/16)
+    // STEREO SPREAD: the right side runs up to 12 ms behind the left (WIDTH), so even a mono sound
+    // echoes wide. PING-PONG is already left/right and DUAL has its own 3/4 timing.
+    const double spread = (dual || s.mode == PingPong) ? 0.0 : 0.012 * s.width * sr;
+    const double targetR = dual ? juce::jmax (1.0, target * 0.75) : target + spread; // DUAL: right side 3/4 of the left (1/4 -> 3/16)
     if (delaySmooth <= 0.0) delaySmooth = target;
     if (delaySmoothR <= 0.0) delaySmoothR = targetR;
     const bool tape = s.mode == Tape, bbd = s.mode == Bbd;
@@ -232,6 +235,7 @@ void Engine::process (juce::AudioBuffer<float>& buffer, const Settings& s, juce:
     const double preSamples = juce::jlimit (1.0, sr * 0.29, s.predelayMs * 0.001 * sr);
 
 
+    const float sideGain = s.width < 0.5f ? 2.0f * s.width : 1.0f + (s.width - 0.5f); // 0 mono, 50% as recorded, 100% 1.5x
     const float decayMeter = (float) std::exp (-(double) n / (0.2 * sr));
     for (int i = 0; i < n; ++i)
     {
@@ -357,8 +361,13 @@ void Engine::process (juce::AudioBuffer<float>& buffer, const Settings& s, juce:
             if (k & 1) revR += o[k] * ((k & 2) ? -0.35f : 0.35f);
             else       revL += o[k] * ((k & 2) ? -0.35f : 0.35f);
         }
-        const float mid = 0.5f * (revL + revR), side = 0.5f * (revL - revR) * s.width;
+        const float mid = 0.5f * (revL + revR), side = 0.5f * (revL - revR) * sideGain;
         revL = mid + side; revR = mid - side;
+
+        // WIDTH works on the echoes too: past 50% it pushes them further out, to 1.5x the side at 100%.
+        // PING-PONG echoes are already hard left / right, so they stay clean there instead of leaking across.
+        const float echoMid = 0.5f * (eL + eR), echoSide = 0.5f * (eL - eR) * (s.mode == PingPong ? juce::jmin (1.0f, sideGain) : sideGain);
+        eL = echoMid + echoSide; eR = echoMid - echoSide;
 
         const float wetL = (eL * s.delayMix + revL * s.reverbMix) * duckGain;
         const float wetR = (eR * s.delayMix + revR * s.reverbMix) * duckGain;

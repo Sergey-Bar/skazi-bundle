@@ -49,6 +49,12 @@ const char* modeTitle (int m)
     return t[juce::jlimit (0, NumModes - 1, m)];
 }
 
+const char* rollStyleTitle (int s)
+{
+    static const char* const t[NumRollStyles] = { "AUTO", "ROLLER", "OFF-ROLL", "GALLOP", "OFFBEAT", "BROKEN" };
+    return t[juce::jlimit (0, NumRollStyles - 1, s)];
+}
+
 const std::vector<int>& scaleSteps (int s)
 {
     static const std::vector<int> steps[NumScales] = {
@@ -66,7 +72,8 @@ const std::vector<int>& scaleSteps (int s)
 
 std::vector<ParamDef> paramDefs()
 {
-    juce::StringArray genres, roles, keys, scales;
+    juce::StringArray genres, roles, keys, scales, styles;
+    for (int st = 0; st < NumRollStyles; ++st) styles.add (rollStyleTitle (st));
     for (int g = 0; g < NumGenres; ++g) genres.add (genreInfo (g).label);
     for (int r = 0; r < NumRoles; ++r) roles.add (juce::String (roleTitle (r)).toUpperCase());
     for (int k = 0; k < 12; ++k) keys.add (keyName (k));
@@ -96,6 +103,17 @@ std::vector<ParamDef> paramDefs()
         { "vol",     "Preview Volume", ParamDef::Float, -60, 0, -12, "dB", 0.1f },
         { "midiOut", "MIDI Out",       ParamDef::Bool, 0, 1, 1 },
         { "freeRun", "Free Run",       ParamDef::Bool, 0, 1, 0 },
+
+        { "rbStyle",  "Roll Style",     ParamDef::Choice, 0, NumRollStyles - 1, RollAuto, "", 1, 1, styles },
+        { "rbSync",   "Syncopation",    ParamDef::Float,  0, 100, 15, "%", 1 },
+        { "rbKick",   "Kick Avoid",     ParamDef::Float,  0, 100, 100, "%", 1 },
+        { "rbOct",    "Octave Jump",    ParamDef::Float,  0, 100, 20, "%", 1 },
+        { "rbDip",    "Pitch Dip",      ParamDef::Float,  0, 100, 0, "%", 1 },
+        { "rbVar",    "Bass Variation", ParamDef::Float,  0, 100, 30, "%", 1 },
+        { "rbEvolve", "Evolve",         ParamDef::Float,  0, 100, 0, "%", 1 },
+        { "rbMut",    "Mutation",       ParamDef::Int,    0, 999, 0, "", 1 },
+        { "rbGlide",  "Glide",          ParamDef::Float,  0, 100, 0, "%", 1 },
+        { "rbGroove", "Groove",         ParamDef::Float,  0, 100, 0, "%", 1 },
     };
 }
 
@@ -235,12 +253,264 @@ void playTemplate (Gen& g, std::vector<Note>& out, const char* t, int bar, int r
 }
 
 //==============================================================================
-void bass (Gen& g, std::vector<Note>& out)
+// ROLL BASS: a one-bar motif around a four-on-the-floor kick, repeated over the loop. Later bars drift from it
+// (VARIATION), the loop can build up (EVOLVE), phrase ends get fills, and notes jump octaves or dip in pitch.
+struct RollStep { bool on = false; int deg = 0; float acc = 0.7f, dip = 0.0f; int len = 1; bool ghost = false; };
+
+int autoRollStyle (const Settings& s)
+{
+    switch (s.genre)
+    {
+        case FullOn: case HardTechno: return Roller;
+        case ProgPsy: return s.density > 0.8f ? Roller : OffRoll;
+        case PsyTech: case TechHouse: case BassHouse: return OffRoll;
+        case MelodicTechno: return s.density > 0.5f ? Roller : OffRoll;
+        case DeepHouse: return Broken;
+        case Trance: return s.density > 0.6f ? OffRoll : Offbeat;
+        default: return Offbeat; // EDM
+    }
+}
+
+void rollBass (Gen& g, std::vector<Note>& out, juce::String& detail)
+{
+    const auto& s = g.s;
+    const int style = s.rollStyle == RollAuto ? autoRollStyle (s) : s.rollStyle;
+    const bool tri = s.triplet || style == Gallop;
+    const int spb = tri ? 3 : 4, perBar = 4 * spb, oct = g.degreesPerOctave();
+    const double stepLen = 1.0 / spb, gateScale = 0.35 + 0.6 * s.gate;
+    auto kickStep = [spb] (int i) { return i % spb == 0; };
+
+    // which steps of each beat carry the bass (the kick owns step 0)
+    std::vector<int> slots;
+    if (tri) slots = { 1, 2 };
+    else switch (style)
+    {
+        case Roller: case Broken: slots = { 1, 2, 3 }; break;
+        case OffRoll: slots = { 2, 3 }; break;
+        default: slots = { 2 }; break; // offbeat
+    }
+
+    std::vector<RollStep> motif ((size_t) perBar);
+    for (int beat = 0; beat < 4; ++beat)
+    {
+        auto beatSlots = slots;
+        if (style == Broken) // a different handful of steps every beat, never none
+        {
+            beatSlots.clear();
+            for (int k : slots) if (g.r.chance (0.35f + 0.5f * s.density)) beatSlots.push_back (k);
+            if (beatSlots.empty()) beatSlots.push_back (g.r.pick (slots));
+        }
+        for (size_t k = 0; k < beatSlots.size(); ++k)
+        {
+            if (k == 0 && beatSlots.size() == 3 && s.density < 0.4f && g.r.chance (0.6f - s.density)) continue;
+            auto& st = motif[(size_t) (beat * spb + beatSlots[k])];
+            st.on = true;
+            st.acc = beatSlots.size() == 1 ? 0.9f : 0.65f + 0.35f * (float) k / (float) (beatSlots.size() - 1);
+        }
+    }
+
+    // SYNCOPATION: extra notes off the usual slots, notes nudged a step, and (with KICK AVOID down) hits on the kick
+    for (int i = 0; i < perBar; ++i)
+    {
+        auto& st = motif[(size_t) i];
+        if (st.on) continue;
+        if (kickStep (i) ? g.r.chance ((1.0f - s.kickAvoid) * (0.2f + 0.6f * s.syncopation)) : g.r.chance (0.35f * s.syncopation * s.density))
+        {
+            st.on = true;
+            st.acc = kickStep (i) ? 0.85f : 0.5f;
+        }
+    }
+    for (int i = 0; i < perBar; ++i)
+    {
+        const int to = i + (g.r.chance (0.5f) ? 1 : -1);
+        if (! motif[(size_t) i].on || to < 0 || to >= perBar || motif[(size_t) to].on || (kickStep (to) && s.kickAvoid > 0.5f)) continue;
+        if (g.r.chance (0.3f * s.syncopation)) std::swap (motif[(size_t) i], motif[(size_t) to]);
+    }
+
+    // OCTAVE JUMP favours the first note of the bar and the last of a beat; MOVEMENT adds the odd fifth
+    bool first = true;
+    for (int i = 0; i < perBar; ++i)
+    {
+        auto& st = motif[(size_t) i];
+        if (! st.on) continue;
+        const bool lastInBeat = i % spb == spb - 1 || i + 1 == perBar || ! motif[(size_t) (i + 1)].on;
+        if (g.r.chance (s.octaveJump * (first ? 1.0f : lastInBeat ? 0.55f : 0.25f))) { st.deg = oct; st.acc = 1.0f; }
+        else if (g.r.chance (0.08f * s.movement)) st.deg = 4;
+        first = false;
+    }
+
+    // PITCH DIP lands on notes with room after them (or the last note before a kick), and the dipped note rings
+    // into the next step so the dive is heard; a high PITCH DIP clears that step in a full roll
+    for (int i = 0; i < perBar; ++i)
+    {
+        auto& st = motif[(size_t) i];
+        if (! st.on) continue;
+        const bool nextFree = i + 1 < perBar && ! kickStep (i + 1);
+        const bool room = nextFree && ! motif[(size_t) (i + 1)].on;
+        if (g.r.chance (s.pitchDip * (room ? 0.8f : ! nextFree ? 0.45f : 0.2f)))
+        {
+            st.dip = juce::jlimit (0.05f, 1.0f, (0.15f + 0.85f * s.pitchDip) * (0.6f + 0.4f * g.r.f()));
+            if (nextFree && (room || g.r.chance (0.5f * s.pitchDip)))
+            {
+                motif[(size_t) (i + 1)].on = false;
+                st.len = 2;
+            }
+        }
+    }
+
+    // MUTATE: the same motif with about a quarter of its steps changed, from its own random stream
+    auto mutateStep = [&] (Rng& m, RollStep& st, int i)
+    {
+        if (kickStep (i) && s.kickAvoid > 0.5f) return;
+        const float x = m.f();
+        if (! st.on) { st = {}; st.on = true; st.acc = 0.6f; st.deg = m.chance (0.3f) ? oct : 0; }
+        else if (x < 0.35f) st.on = false;
+        else if (x < 0.7f || s.pitchDip <= 0.0f) st.deg = st.deg == 0 ? oct : 0;
+        else st.dip = st.dip > 0.0f ? 0.0f : juce::jmax (0.25f, s.pitchDip);
+    };
+    if (s.mutation > 0)
+    {
+        Rng m ((juce::uint32) s.mutation * 2654435761u + (juce::uint32) s.seed);
+        for (int i = 0; i < perBar; ++i)
+            if (m.chance (0.25f)) mutateStep (m, motif[(size_t) i], i);
+    }
+
+    // GROOVE: the steps of each beat get their own weight (the 16th after the "and" pushes hardest),
+    // and quiet ghost notes fill some gaps
+    if (s.groove > 0.0f)
+    {
+        static const float weight4[] = { 0.9f, 0.5f, 1.0f, 0.68f }, weight3[] = { 0.9f, 0.6f, 1.0f };
+        for (int i = 0; i < perBar; ++i)
+        {
+            auto& st = motif[(size_t) i];
+            const float w = tri ? weight3[i % 3] : weight4[i % 4];
+            if (st.on) { if (st.deg != oct) st.acc += (w - st.acc) * s.groove; }
+            else if (! kickStep (i) && g.r.chance (0.4f * s.groove))
+            {
+                st.on = st.ghost = true;
+                st.acc = 0.12f;
+            }
+        }
+    }
+
+    // a high GLIDE wants something to slide between: some roots before another root start an octave up and fall
+    if (s.glide > 0.0f)
+        for (int i = 0; i + 1 < perBar; ++i)
+        {
+            auto& st = motif[(size_t) i];
+            const auto& nx = motif[(size_t) (i + 1)];
+            if (st.on && nx.on && ! st.ghost && ! nx.ghost && st.deg == 0 && nx.deg == 0 && st.dip <= 0.0f && g.r.chance (0.3f * s.glide))
+                st.deg = oct;
+        }
+
+    const bool followChords = g.family != Psy && s.genre != HardTechno;
+    juce::StringArray fills;
+    for (int bar = 0; bar < s.bars; ++bar)
+    {
+        const float t = s.bars > 1 ? (float) bar / (float) (s.bars - 1) : 1.0f;
+        const int root = followChords ? g.chord (bar) : (g.chord (bar) == 1 ? 1 : 0);
+        auto line = motif;
+
+        if (bar > 0)
+            for (int i = 0; i < perBar; ++i)
+                if (g.r.chance (0.18f * s.variation)) mutateStep (g.r, line[(size_t) i], i);
+
+        // EVOLVE: early bars play a thinner, plainer line and the loop builds to its end
+        const float hold = s.evolve * (1.0f - t);
+        for (auto& st : line)
+        {
+            if (! st.on) continue;
+            if (st.acc < 0.95f && g.r.chance (0.7f * hold)) st.on = false;
+            if (g.r.chance (hold)) { st.deg = 0; st.dip = 0.0f; st.len = 1; }
+        }
+
+        // fills on the last beat of a phrase: every second bar in short loops, every fourth in long ones
+        const bool phraseEnd = s.bars >= 2 && bar % 2 == 1 && (s.bars <= 4 || bar % 4 == 3);
+        if (phraseEnd && g.r.chance (0.25f + 0.75f * s.variation))
+        {
+            const int last = 3 * spb;
+            for (int i = last; i < perBar; ++i) line[(size_t) i] = {};
+            switch (g.r.i (4))
+            {
+                case 0:
+                {
+                    fills.addIfNotAlreadyThere ("OCTAVE RUN");
+                    static const std::vector<int> run = { 2, 4, 7 }; // climbs to the octave
+                    for (int i = last + 1, k = 0; i < perBar; ++i, ++k)
+                    {
+                        const int d = run[(size_t) juce::jmin (k + (tri ? 1 : 0), 2)];
+                        line[(size_t) i] = { true, d == 7 ? oct : d, 0.6f + 0.13f * (float) k, 0.0f, 1 };
+                    }
+                    break;
+                }
+                case 1:
+                    fills.addIfNotAlreadyThere ("PICKUP");
+                    for (int i = last + 1; i < perBar; ++i) line[(size_t) i] = { true, i - perBar, 0.7f, 0.0f, 1 }; // walks up into the next root
+                    break;
+                case 2:
+                    fills.addIfNotAlreadyThere ("DROP"); // a beat of silence before the next phrase
+                    break;
+                default:
+                    fills.addIfNotAlreadyThere ("STUTTER");
+                    for (int i = last; i < perBar; ++i)
+                        if (! kickStep (i) || s.kickAvoid < 0.5f) line[(size_t) i] = { true, 0, 0.45f + 0.5f * (float) (i - last) / (float) spb, 0.0f, 1 };
+                    break;
+            }
+        }
+
+        for (int i = 0; i < perBar; ++i)
+        {
+            const auto& st = line[(size_t) i];
+            if (! st.on) continue;
+            const double start = bar * 4.0 + i * stepLen;
+            double len = st.len * stepLen * (st.dip > 0.0f ? 0.95 : st.ghost ? 0.5 : gateScale);
+
+            // GLIDE: a note slides into a different note one or two steps later by overlapping it
+            int next = i + 1;
+            while (next < perBar && ! line[(size_t) next].on) ++next;
+            const bool slide = next < perBar && next - i <= 2 && st.dip <= 0.0f && ! st.ghost && ! line[(size_t) next].ghost
+                            && line[(size_t) next].deg != st.deg && g.r.chance (0.85f * s.glide);
+            if (slide) len = (next - i) * stepLen + 0.04;
+            // KICK AVOID also keeps notes from ringing into the next kick
+            else if (s.kickAvoid > 0.5f)
+                len = juce::jmin (len, std::floor (start + 1.0e-6) + 1.0 - start - 0.02);
+            const size_t before = out.size();
+            g.add (out, g.pitch (root + st.deg, kBassBase), start, len, g.vel (st.acc));
+            if (out.size() > before)
+            {
+                out.back().dip = st.dip;
+                out.back().slide = slide;
+                if (st.ghost) out.back().velocity = juce::jmax (1, out.back().velocity * 2 / 5);
+            }
+        }
+    }
+
+    const juce::String dot = juce::String::fromUTF8 (" \xc2\xb7 ");
+    detail = juce::String (rollStyleTitle (style)) + dot + "1-BAR MOTIF" + (s.bars > 1 ? " X" + juce::String (s.bars) : juce::String())
+           + dot + (fills.isEmpty() ? juce::String ("NO FILLS") : "FILLS: " + fills.joinIntoString (", "))
+           + (s.mutation > 0 ? dot + "MUT #" + juce::String (s.mutation) : juce::String());
+}
+
+// The classic house grooves get their dips here, on notes with a gap after them
+void houseDips (Gen& g, std::vector<Note>& out)
+{
+    if (g.s.pitchDip <= 0.0f) return;
+    std::sort (out.begin(), out.end(), [] (const Note& a, const Note& b) { return a.start < b.start; });
+    for (size_t i = 0; i < out.size(); ++i)
+    {
+        const double gap = (i + 1 < out.size() ? out[i + 1].start : g.s.bars * 4.0) - (out[i].start + out[i].length);
+        if (gap > 0.2 && g.r.chance (0.8f * g.s.pitchDip))
+            out[i].dip = (0.15f + 0.85f * g.s.pitchDip) * (0.6f + 0.4f * g.r.f());
+    }
+}
+
+void bass (Gen& g, std::vector<Note>& out, juce::String& detail)
 {
     const auto& s = g.s;
     const double gateScale = 0.35 + 0.6 * s.gate;
 
-    if (g.family == House && ! s.triplet)
+    // AUTO in the house genres keeps the hand-written house grooves; any other style uses ROLL BASS
+    if (g.family == House && ! s.triplet && s.rollStyle == RollAuto)
     {
         static const std::vector<const char*> tech = { "..r-..r...r-.ro.", "..r...r..r..r.o.", ".r..r.r..r..r..5", "..r-r-..r-..o-..", "..rg..r...rg..o." };
         static const std::vector<const char*> deep = { "r--..r..5--..r..", "..r--.r...7--.5.", "r-..r-.5..r-.o..", "r--.....r-.3.5.." };
@@ -250,51 +520,12 @@ void bass (Gen& g, std::vector<Note>& out)
         const char* b = g.r.pick (list);
         for (int bar = 0; bar < s.bars; ++bar)
             playTemplate (g, out, (bar % 2 == 1 && g.r.chance (0.3f + 0.6f * s.movement)) ? b : a, bar, g.chord (bar), kBassBase, (float) gateScale);
+        houseDips (g, out);
+        detail = "CLASSIC HOUSE GROOVE";
         return;
     }
 
-    // Rolling basses: which steps of each beat carry the bass (the kick owns step 0)
-    std::vector<int> slots;
-    if (s.triplet) slots = { 1, 2 };
-    else switch (s.genre)
-    {
-        case FullOn: case HardTechno: slots = { 1, 2, 3 }; break;
-        case ProgPsy: slots = s.density > 0.8f ? std::vector<int> { 1, 2, 3 } : std::vector<int> { 2, 3 }; break;
-        case PsyTech: slots = { 2, 3 }; break;
-        case MelodicTechno: slots = s.density > 0.5f ? std::vector<int> { 1, 2, 3 } : std::vector<int> { 2, 3 }; break;
-        case Trance: slots = s.density > 0.6f ? std::vector<int> { 2, 3 } : std::vector<int> { 2 }; break;
-        default: slots = { 2 }; break; // EDM offbeat
-    }
-    const bool followChords = g.family != Psy && s.genre != HardTechno;
-    const int fillBar = s.bars == 1 ? 0 : 1;
-
-    for (int bar = 0; bar < s.bars; ++bar)
-    {
-        const int root = followChords ? g.chord (bar) : (g.chord (bar) == 1 ? 1 : 0);
-        for (int beat = 0; beat < 4; ++beat)
-        {
-            const bool fill = beat == 3 && bar % 2 == fillBar && g.r.chance (0.3f + 0.5f * s.movement);
-            for (size_t k = 0; k < slots.size(); ++k)
-            {
-                const int slot = slots[k];
-                if (k == 0 && slots.size() == 3 && s.density < 0.4f && g.r.chance (0.6f - s.density)) continue;
-                int deg = root;
-                if (fill && k > 0)
-                {
-                    static const std::vector<int> fills = { 7, -1, 1, 4, -2, 2 };
-                    const int f = g.r.pick (fills);
-                    deg = root + (f == 7 ? g.degreesPerOctave() : f);
-                }
-                else if (s.genre == PsyTech && k + 1 == slots.size() && g.r.chance (0.3f * s.movement))
-                    deg = root + g.degreesPerOctave();
-                else if (s.genre == Edm && beat % 2 == 1 && g.r.chance (s.movement))
-                    deg = root + g.degreesPerOctave();
-                const float acc = slots.size() == 1 ? 0.9f : 0.65f + 0.35f * (float) k / (float) (slots.size() - 1);
-                const double len = (s.genre == Trance || s.genre == Edm) && slots.size() == 1 ? 0.5 * gateScale : g.stepLen * gateScale;
-                g.add (out, g.pitch (deg, kBassBase), bar * 4.0 + beat + slot * g.stepLen, len, g.vel (acc));
-            }
-        }
-    }
+    rollBass (g, out, detail);
 }
 
 //==============================================================================
@@ -721,7 +952,7 @@ Pattern generate (const Settings& s)
 
     switch (s.role)
     {
-        case Bass:    bass (g, p.notes); break;
+        case Bass:    bass (g, p.notes, p.detail); break;
         case Acid:    acid (g, p.notes); break;
         case Lead:    melody (g, p.notes, kLeadBase, false); break;
         case Pluck:   melody (g, p.notes, kMidBase + 12, true); break;
@@ -746,6 +977,7 @@ Pattern generate (const Settings& s)
         for (auto& n : p.notes) n.pitch = juce::jlimit (0, 127, n.pitch + 12 * s.octave);
     applyGroove (p.notes, s, (juce::uint32) s.seed, p.drums);
     tidy (p.notes, p.lengthBeats);
+    p.bends = dipBends (p.notes);
 
     const auto& gi = genreInfo (s.genre);
     const juce::String dot = juce::String::fromUTF8 (" \xc2\xb7 ");
@@ -794,6 +1026,29 @@ void finishNotes (std::vector<Note>& notes, double lengthBeats, const Finish& f)
     tidy (notes, lengthBeats);
 }
 
+std::vector<Bend> dipBends (const std::vector<Note>& notes)
+{
+    std::vector<Bend> out;
+    for (auto& n : notes)
+    {
+        if (n.dip <= 0.0f) continue;
+        // the dive starts 40% into the note and speeds up towards its end
+        const double a = n.start + n.length * 0.4, b = n.start + n.length;
+        const int steps = juce::jmax (4, (int) std::ceil ((b - a) * 48.0));
+        for (int k = 0; k <= steps; ++k)
+        {
+            const float x = (float) k / (float) steps;
+            out.push_back ({ a + (b - a) * x, -n.dip * x * x });
+        }
+        out.push_back ({ b + 1.0e-4, 0.0f });
+    }
+    if (! out.empty()) out.insert (out.begin(), Bend { 0.0, 0.0f });
+    std::stable_sort (out.begin(), out.end(), [] (const Bend& x, const Bend& y) { return x.beat < y.beat; });
+    return out;
+}
+
+int bendTo14Bit (float value) { return juce::jlimit (0, 16383, 8192 + juce::roundToInt (juce::jlimit (-1.0f, 1.0f, value) * 8191.0f)); }
+
 juce::MidiFile toMidiFile (const Pattern& p, double bpm)
 {
     const int tpq = 960;
@@ -809,6 +1064,8 @@ juce::MidiFile toMidiFile (const Pattern& p, double bpm)
         seq.addEvent (juce::MidiMessage::noteOn (1, n.pitch, (juce::uint8) juce::jlimit (1, 127, n.velocity)), on);
         seq.addEvent (juce::MidiMessage::noteOff (1, n.pitch), off);
     }
+    for (auto& b : p.bends)
+        seq.addEvent (juce::MidiMessage::pitchWheel (1, bendTo14Bit (b.value)), ticks (b.beat));
     seq.addEvent (juce::MidiMessage::endOfTrack(), ticks (p.lengthBeats));
     seq.sort();
     seq.updateMatchedPairs();

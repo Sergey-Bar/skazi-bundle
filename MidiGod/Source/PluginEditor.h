@@ -73,11 +73,34 @@ private:
     GodButton godBtn;
     DragTile dragTile;
     DropZone dropZone;
-    juce::TextButton saveBtn { "SAVE .MID" }, genBtn { "GENERATOR" };
+    juce::TextButton saveBtn { "SAVE .MID" }, genBtn { "GENERATOR" }, mutateBtn { "MUTATE" };
     std::unique_ptr<juce::FileChooser> chooser;
 
-    skazi::ChoiceRow *genreRow, *roleRow, *keyRow, *barsRow, *gridRow, *modeRow, *quantRow;
+    skazi::ChoiceRow *genreRow, *roleRow, *keyRow, *barsRow, *gridRow, *modeRow, *quantRow, *styleRow;
     juce::ComboBox* scaleBox;
     skazi::Knob *density, *swing, *gate, *dyn, *move, *human, *octave, *seed, *sens, *vol;
     skazi::ParamToggle *snap, *midiOut, *freeRun;
+    skazi::Knob *rbSync, *rbKick, *rbOct, *rbDip, *rbGlide, *rbGroove, *rbVar, *rbEvolve;
+};
+
+// The plugin window: MIDI GOD drawn at any size. It opens 20% over its 1200 x 858 design and resizes from the corner
+class MidiGodWindow : public juce::AudioProcessorEditor
+{
+public:
+    static constexpr int designW = 1200, designH = 858;
+
+    explicit MidiGodWindow (MidiGodProcessor& p) : AudioProcessorEditor (p), editor (p)
+    {
+        addAndMakeVisible (editor);
+        editor.setBounds (0, 0, designW, designH);
+        setResizable (true, true);
+        setResizeLimits (designW * 7 / 10, designH * 7 / 10, designW * 8 / 5, designH * 8 / 5);
+        getConstrainer()->setFixedAspectRatio ((double) designW / (double) designH);
+        setSize (designW * 6 / 5, designH * 6 / 5);
+    }
+
+    void resized() override { editor.setTransform (juce::AffineTransform::scale ((float) getWidth() / (float) designW)); }
+
+private:
+    MidiGodEditor editor;
 };

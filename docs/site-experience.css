@@ -536,7 +536,7 @@ footer .wrap{font-size:12px}
 .hero-proof span{padding:8px 14px;border:1px solid var(--glass-line);border-radius:999px;background:var(--glass);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);font-size:12.5px}
 .hero-proof span+span::before{display:none}
 .hero-proof b{font-variant-numeric:tabular-nums}
-.hero-proof b[data-count="15"]{min-width:2ch;display:inline-block}.hero-proof b[data-count="8168"]{min-width:5ch;display:inline-block}
+.hero-proof b[data-count="19"]{min-width:2ch;display:inline-block}.hero-proof b[data-count="8812"]{min-width:5ch;display:inline-block}
 .dl-open{min-height:56px;padding:6px 24px 6px 8px;gap:12px;border-radius:999px;font-size:15px;box-shadow:0 18px 44px -14px rgba(229,9,20,.75),inset 0 1px 0 rgba(255,255,255,.18);cursor:pointer;transition:transform .2s,box-shadow .2s,background .2s}
 .dl-open .download-mark{width:40px;height:40px;border-color:rgba(255,255,255,.55);background:rgba(0,0,0,.18)}
 .dl-open .download-mark svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}

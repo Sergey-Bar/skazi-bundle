@@ -12,7 +12,10 @@ namespace
     bool drawBrandLogo (juce::Graphics& g, juce::Rectangle<float> r)
     {
 #if SKAZI_HAS_LOGO
-        static const juce::Image logo = juce::ImageCache::getFromMemory (BinaryData::skazi_logo_png, BinaryData::skazi_logo_pngSize);
+        // Not a static: an image still alive when Windows unloads the plugin DLL frees its Direct2D
+        // resources under the loader lock, and the graphics driver deadlocks the DAW on quit.
+        // ImageCache hands back the same decoded image every paint.
+        const auto logo = juce::ImageCache::getFromMemory (BinaryData::skazi_logo_png, BinaryData::skazi_logo_pngSize);
         g.setColour (juce::Colours::black);
         g.fillRoundedRectangle (r, 6.f);
         g.drawImage (logo, r.reduced (4.f, 3.f), juce::RectanglePlacement::centred);

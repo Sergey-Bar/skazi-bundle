@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "../../Common/UpdateNotice.h"
 #include "PluginEditor.h"
 #include "Presets.h"
 
@@ -103,7 +104,7 @@ void ShaksukaProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Mi
 
 juce::AudioProcessorEditor* ShaksukaProcessor::createEditor()
 {
-    return new ShaksukaEditor (*this);
+    return skazi::withUpdateNotice (new ShaksukaEditor (*this));
 }
 
 void ShaksukaProcessor::getStateInformation (juce::MemoryBlock& destData)

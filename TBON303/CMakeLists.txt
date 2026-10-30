@@ -85,4 +85,11 @@ if(SKAZI303_BUILD_TESTS)
         JUCE_PLUGINHOST_VST3=1 JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JUCE_MODAL_LOOPS_PERMITTED=1)
     target_link_libraries(Skazi303HostTest PRIVATE
         juce::juce_audio_processors juce::juce_recommended_config_flags)
+
+    # Editor snapshots for checking the panel
+    juce_add_console_app(Skazi303Shot PRODUCT_NAME "Skazi303Shot")
+    target_sources(Skazi303Shot PRIVATE tests/Shot.cpp Source/PluginProcessor.cpp Source/PluginEditor.cpp Source/StepGrid.cpp)
+    target_include_directories(Skazi303Shot PRIVATE Source)
+    target_compile_definitions(Skazi303Shot PRIVATE JucePlugin_Name="SKAZI 303" JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JUCE_MODAL_LOOPS_PERMITTED=1)
+    target_link_libraries(Skazi303Shot PRIVATE juce::juce_audio_utils juce::juce_dsp juce::juce_recommended_config_flags)
 endif()

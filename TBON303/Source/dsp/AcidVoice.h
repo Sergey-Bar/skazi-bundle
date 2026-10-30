@@ -23,6 +23,11 @@ struct VoiceParams
     float cutoffHz = 500.0f, resonance = 0.6f, envMod = 0.5f, decaySec = 0.6f;
     float accent = 0.6f, slideSec = 0.06f;
     float ampDecaySec = 2.5f; // VCA decay while the gate is held
+    float ampSustain = 0.0f;  // level the VCA decays to (0 = the stock 303 fade-out)
+    float ampReleaseSec = 0.004f;
+    float filterAttackSec = 0.0f;  // 0 = the stock 303 instant filter envelope
+    float filterSustain = 0.0f;
+    float filterReleaseSec = 0.3f; // only the sustained part of the filter envelope releases at this rate
 
     // Circuit mods (in the spirit of the classic 303 hardware mods)
     float filterTrack = 0.0f;     // 0..1: cutoff follows the note pitch
@@ -69,6 +74,9 @@ public:
         amp = 0.0;
         attacking = false;
         filterEnv = 0.0;
+        filterAttacking = false;
+        filterTransient = 0.0;
+        filterHeld = 0.0;
         accentCap = 0.0;
         accentGain = 1.0;
         logCutoff = std::log2 (500.0);
@@ -95,11 +103,21 @@ public:
         pitch = midiNote;
         gate = true;
         attacking = true;
-        filterEnv = 1.0;
+        filterAttacking = true;
+        filterHeld = 0.0;
         noteCents = drift.randomCents (lastDriftAmount);
     }
 
     void noteOff() { gate = false; }
+
+    // Wheels. Bend is in semitones; the mod wheel (0..1) opens the cutoff and/or adds vibrato.
+    void setBend (double semitones) { bendTarget = semitones; }
+    void setModWheel (double amount, int destination, double depth)
+    {
+        modWheel = std::clamp (amount, 0.0, 1.0);
+        modDest = destination;
+        modDepth = depth;
+    }
     bool isActive() const { return gate || amp > 1.0e-5; }
 
     float render (const VoiceParams& p)
@@ -112,8 +130,18 @@ public:
         if (sliding && std::abs (targetPitch - pitch) < 0.001)
             sliding = false;
 
+        bendNow += (bendTarget - bendNow) * (1.0 - std::exp (-1.0 / (0.004 * sr)));
+        const double wheel = modWheel * modDepth;
+        double vibrato = 0.0;
+        if (modDest != 0 && wheel > 0.0)
+        {
+            vibPhase += 5.5 / sr;
+            vibPhase -= std::floor (vibPhase);
+            vibrato = std::sin (vibPhase * kTwoPi) * 0.6 * wheel; // up to +-0.6 semitones
+        }
+
         const double cents = p.fineCents + noteCents + drift.next (p.drift);
-        const double note = pitch + p.tuneSemis + cents / 100.0;
+        const double note = pitch + p.tuneSemis + cents / 100.0 + bendNow + vibrato;
         const double freq = 440.0 * std::exp2 ((note - 69.0) / 12.0);
 
         float mainOsc = 0.0f, subOsc = 0.0f;
@@ -122,9 +150,36 @@ public:
             mainOsc += hiss.next() * p.noise * 0.12f;
 
         // --- filter envelope (MEG). Accents use their own (normally very short) decay.
+        // The envelope is a decaying part plus a sustained part: while the gate is held it
+        // decays towards SUSTAIN; after the gate the sustained part fades at the RELEASE rate
+        // while the decaying part keeps its own rate. SUSTAIN 0 is the stock 303 envelope.
         const double decay = accentOn ? std::max (0.03, (double) p.accentDecaySec)
                                       : std::max (0.05, (double) p.decaySec);
-        filterEnv *= std::exp (-4.0 / (decay * sr));
+        if (filterAttacking && p.filterAttackSec < 0.0005f)
+        {
+            filterTransient = 1.0; // instant attack: decays from this very sample, like the stock 303
+            filterAttacking = false;
+        }
+        if (filterAttacking)
+        {
+            filterTransient += 1.0 / (p.filterAttackSec * sr);
+            if (filterTransient >= 1.0)
+            {
+                filterTransient = 1.0;
+                filterAttacking = false;
+            }
+            filterEnv = filterTransient;
+        }
+        else
+        {
+            filterTransient *= std::exp (-4.0 / (decay * sr));
+            const double sus = std::clamp ((double) p.filterSustain, 0.0, 1.0);
+            if (gate)
+                filterHeld = sus * (1.0 - filterTransient);
+            else
+                filterHeld *= std::exp (-4.0 / (std::max (0.005, (double) p.filterReleaseSec) * sr));
+            filterEnv = filterTransient + filterHeld;
+        }
 
         // Accent sweep: accented envelope charges a cap through a resonance-dependent
         // RC. Back-to-back accents don't let it discharge, so the cutoff climbs.
@@ -135,7 +190,8 @@ public:
         const double targetLog = std::log2 (std::max (20.0f, p.cutoffHz))
                                + p.envMod * 6.0 * filterEnv   // up to 6 octaves of sweep
                                + accentCap * 4.5
-                               + p.filterTrack * (pitch - 48.0) / 12.0;
+                               + p.filterTrack * (pitch - 48.0) / 12.0
+                               + (modDest != 1 ? wheel * 4.0 : 0.0); // mod wheel: up to 4 octaves brighter
 
         // Slides also smooth the cutoff between the two notes; otherwise only de-zip.
         const double cutTau = sliding ? slideTau * 0.6 : 0.0015;
@@ -181,13 +237,14 @@ public:
             }
             else
             {
-                amp *= std::exp (-1.0 / (std::max (0.05, (double) p.ampDecaySec) * sr));
+                const double sus = std::clamp ((double) p.ampSustain, 0.0, 1.0);
+                amp = sus + (amp - sus) * std::exp (-1.0 / (std::max (0.05, (double) p.ampDecaySec) * sr));
             }
         }
         else
         {
             attacking = false;
-            amp *= std::exp (-1.0 / (0.004 * sr));
+            amp *= std::exp (-1.0 / (std::max (0.001, (double) p.ampReleaseSec) * sr));
         }
 
         const double targetAccentGain = accentOn ? 1.0 + 0.9 * p.accent : 1.0;
@@ -210,10 +267,12 @@ private:
     FormantFilter formant;
     Distortion preDist, postDist;
 
-    bool gate = false, attacking = false, accentOn = false, sliding = false;
+    bool gate = false, attacking = false, accentOn = false, sliding = false, filterAttacking = false;
     double pitch = 48.0, targetPitch = 48.0, noteCents = 0.0;
-    double amp = 0.0, filterEnv = 0.0, accentCap = 0.0, accentGain = 1.0;
+    double amp = 0.0, filterEnv = 0.0, filterTransient = 0.0, filterHeld = 0.0, accentCap = 0.0, accentGain = 1.0;
     double logCutoff = 9.0, toneState = 0.0;
+    double bendTarget = 0.0, bendNow = 0.0, modWheel = 0.0, modDepth = 1.0, vibPhase = 0.0;
+    int modDest = 0; // 0 = cutoff, 1 = vibrato, 2 = both
     float lastDriftAmount = 0.3f;
 };
 } // namespace s303

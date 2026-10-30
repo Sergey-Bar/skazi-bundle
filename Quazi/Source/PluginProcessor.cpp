@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "../../Common/UpdateNotice.h"
 #include "PluginEditor.h"
 #include "Presets.h"
 
@@ -31,7 +32,7 @@ void QuaziProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiB
     finishBlock (buffer); // smooth preset changes
 }
 
-juce::AudioProcessorEditor* QuaziProcessor::createEditor() { return new QuaziEditor (*this); }
+juce::AudioProcessorEditor* QuaziProcessor::createEditor() { return skazi::withUpdateNotice (new QuaziEditor (*this)); }
 
 const std::vector<skazi::Preset>& QuaziProcessor::presetList() const { return quazi::presets(); }
 skazi::Preset QuaziProcessor::randomPreset (juce::Random& rng) const { return quazi::randomPreset (rng); }

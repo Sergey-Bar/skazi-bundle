@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "../../Common/UpdateNotice.h"
 #include <juce_audio_formats/juce_audio_formats.h>
 #include "PluginEditor.h"
 #include "Presets.h"
@@ -1489,5 +1490,5 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 
 juce::AudioProcessorEditor* AcidanceProcessor::createEditor()
 {
-    return new AcidanceEditor (*this);
+    return skazi::withUpdateNotice (new AcidanceEditor (*this));
 }

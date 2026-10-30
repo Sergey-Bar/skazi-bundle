@@ -29,7 +29,7 @@ static juce::AudioBuffer<float> render (const Pattern& p, int role, double bpm, 
     PreviewSynth synth;
     synth.prepare (sr);
     synth.setSound (role, p.drums);
-    struct Ev { double t; bool on; int note, vel; };
+    struct Ev { double t; bool on; int note, vel; bool bend = false; float value = 0.0f; };
     std::vector<Ev> ev;
     const double spb = 60.0 / bpm;
     for (int k = 0; k < loops; ++k)
@@ -38,6 +38,9 @@ static juce::AudioBuffer<float> render (const Pattern& p, int role, double bpm, 
             ev.push_back ({ (n.start + k * p.lengthBeats) * spb, true, n.pitch, n.velocity });
             ev.push_back ({ (n.start + n.length + k * p.lengthBeats) * spb, false, n.pitch, 0 });
         }
+    for (int k = 0; k < loops; ++k)
+        for (auto& b : p.bends)
+            ev.push_back ({ (b.beat + k * p.lengthBeats) * spb, false, 0, 0, true, b.value });
     std::stable_sort (ev.begin(), ev.end(), [] (const Ev& a, const Ev& b) { return a.t != b.t ? a.t < b.t : (! a.on && b.on); });
     const int total = (int) ((loops * p.lengthBeats * spb + 0.6) * sr);
     juce::AudioBuffer<float> buf (2, total);
@@ -47,7 +50,8 @@ static juce::AudioBuffer<float> render (const Pattern& p, int role, double bpm, 
     {
         const int at = juce::jlimit (0, total, (int) (e.t * sr));
         if (at > pos) { synth.render (buf.getWritePointer (0, pos), buf.getWritePointer (1, pos), at - pos, 1.0f); pos = at; }
-        if (e.on) synth.noteOn (e.note, e.vel); else synth.noteOff (e.note);
+        if (e.bend) synth.setBend (e.value * kBendRangeSemis);
+        else if (e.on) synth.noteOn (e.note, e.vel); else synth.noteOff (e.note);
     }
     if (total > pos) synth.render (buf.getWritePointer (0, pos), buf.getWritePointer (1, pos), total - pos, 1.0f);
     return buf;
@@ -232,6 +236,90 @@ int main (int argc, char* argv[])
         check (mf.getTimeFormat() == 960, "midi file resolution");
     }
 
+    // 2b. ROLL BASS: every style with the knobs pushed around stays in key, off the kick and bends cleanly
+    {
+        int rolls = 0, dipped = 0, mutatedDiffer = 0, mutable_ = 0;
+        for (int g = 0; g < NumGenres; ++g)
+            for (int st = 0; st < NumRollStyles; ++st)
+                for (int seed = 1; seed <= 8; ++seed)
+                {
+                    Settings s;
+                    s.genre = g; s.role = Bass; s.rollStyle = st; s.seed = seed * 53; s.bars = seed % 2 == 0 ? 8 : 4;
+                    s.key = seed % 12; s.scale = seed % NumScales; s.triplet = seed == 5;
+                    s.syncopation = 0.12f * seed; s.octaveJump = 0.1f * seed; s.pitchDip = seed % 3 == 0 ? 0.0f : 0.11f * seed;
+                    s.variation = 0.12f * seed; s.evolve = seed % 4 == 0 ? 0.8f : 0.0f; s.kickAvoid = seed == 7 ? 0.0f : 1.0f;
+                    const auto p = generate (s);
+                    const juce::String where = juce::String (genreInfo (g).title) + " roll " + rollStyleTitle (st) + " seed " + juce::String (s.seed);
+                    check (! p.notes.empty(), where + ": no notes");
+                    const auto& steps = scaleSteps (s.scale);
+                    const bool house = (g == TechHouse || g == DeepHouse || g == BassHouse) && st == RollAuto && ! s.triplet;
+                    for (auto& n : p.notes)
+                    {
+                        const int pc = ((n.pitch - s.key) % 12 + 12) % 12;
+                        check (house || std::find (steps.begin(), steps.end(), pc) != steps.end(), where + ": note out of key");
+                        // kick avoid: nothing starts on a beat (swing never moves beats)
+                        if (s.kickAvoid > 0.5f && ! house)
+                            check (std::abs (n.start - std::round (n.start)) > 1.0e-6, where + ": note on the kick");
+                    }
+                    double last = -1.0;
+                    for (auto& b : p.bends)
+                    {
+                        check (b.value <= 0.0f && b.value >= -1.0f && b.beat >= last, where + ": bend order / range");
+                        last = b.beat;
+                    }
+                    if (! p.bends.empty())
+                    {
+                        check (p.bends.back().value == 0.0f, where + ": bend not reset");
+                        ++dipped;
+                    }
+                    check (s.pitchDip > 0.0f || p.bends.empty(), where + ": bends with PITCH DIP at zero");
+                    check (p.detail.isNotEmpty(), where + ": no detail line");
+
+                    auto m = s;
+                    m.mutation = 77;
+                    const auto mp = generate (m);
+                    bool differs = mp.notes.size() != p.notes.size() || mp.bends.size() != p.bends.size();
+                    for (size_t i = 0; ! differs && i < p.notes.size(); ++i)
+                        differs = mp.notes[i].pitch != p.notes[i].pitch || std::abs (mp.notes[i].start - p.notes[i].start) > 1.0e-6;
+                    if (! house) { mutatedDiffer += differs ? 1 : 0; ++mutable_; } // AUTO house grooves have no motif to mutate
+                    ++rolls;
+                }
+        std::printf ("roll bass: %d loops, %d with dips, %d changed by MUTATE\n", rolls, dipped, mutatedDiffer);
+        check (dipped > rolls / 3, "roll bass: too few loops with dips");
+        std::printf ("  MUTATE changed %d of %d motifs\n", mutatedDiffer, mutable_);
+        check (mutatedDiffer > mutable_ * 4 / 5, "roll bass: MUTATE changes too little");
+
+        // GLIDE: slides overlap a different next note; GROOVE adds quiet ghost notes
+        {
+            Settings gs; gs.genre = PsyTech; gs.role = Bass; gs.glide = 1.0f; gs.groove = 1.0f; gs.octaveJump = 0.5f; gs.bars = 4;
+            const auto gp = generate (gs);
+            int slides = 0, ghosts = 0;
+            for (size_t i = 0; i < gp.notes.size(); ++i)
+            {
+                const auto& n = gp.notes[i];
+                ghosts += n.velocity < 50 ? 1 : 0;
+                if (! n.slide) continue;
+                ++slides;
+                const bool overlaps = std::any_of (gp.notes.begin(), gp.notes.end(), [&] (const Note& o)
+                    { return o.pitch != n.pitch && o.start > n.start && o.start < n.start + n.length; });
+                check (overlaps, "glide: a slide that overlaps nothing");
+            }
+            std::printf ("  glide + groove loop: %d notes, %d slides, %d ghosts\n", (int) gp.notes.size(), slides, ghosts);
+            check (slides > 0 && ghosts > 0, "glide / groove did nothing");
+            Settings none = gs; none.glide = 0.0f;
+            for (auto& n : generate (none).notes) check (! n.slide, "slide with GLIDE at zero");
+        }
+
+        // the dips reach the .mid as pitch wheel moves
+        Settings s; s.genre = FullOn; s.role = Bass; s.pitchDip = 0.9f; s.bars = 4;
+        const auto p = generate (s);
+        int wheels = 0;
+        const auto mf = toMidiFile (p, 145.0);
+        for (auto* e : *mf.getTrack (0)) if (e->message.isPitchWheel()) ++wheels;
+        check (wheels == (int) p.bends.size() && wheels > 0, "roll bass: pitch wheel in the midi file");
+        std::printf ("  full-on dip loop: %d notes, %d bends  [%s]\n", (int) p.notes.size(), wheels, p.detail.toRawUTF8());
+    }
+
     // 3. audio to MIDI on loops rendered from known notes
     std::printf ("audio to midi:\n");
     roundTrip ("full-on bass", FullOn, Bass, BassLine, 0.9, 0.9);
@@ -239,7 +327,8 @@ int main (int argc, char* argv[])
     roundTrip ("tech house bass", TechHouse, Bass, BassLine, 0.85, 0.85);
     roundTrip ("trance lead", Trance, Lead, Melody, 0.85, 0.85);
     roundTrip ("prog psy pluck", ProgPsy, Pluck, Melody, 0.8, 0.8);
-    roundTrip ("psy-tech acid", PsyTech, Acid, BassLine, 0.75, 0.75);
+    // the preview synth slides acid notes legato now, and the shortest notes after a long slide never settle on their pitch
+    roundTrip ("psy-tech acid", PsyTech, Acid, BassLine, 0.65, 0.75);
     roundTrip ("trance drums", Trance, Drums, DrumHits, 0.75, 0.85);
     roundTrip ("tech house drums", TechHouse, Drums, DrumHits, 0.75, 0.75);
     roundTrip ("trance pad chords", Trance, Pad, ChordTrack, 0, 0);
@@ -288,7 +377,25 @@ int main (int argc, char* argv[])
             mix.applyGain (0.8f / juce::jmax (0.01f, mix.getMagnitude (0, mix.getNumSamples())));
             writeWav (wavDir.getChildFile (juce::String (g).paddedLeft ('0', 2) + " " + genreInfo (g).title + ".wav"), mix, sr);
         }
-        std::printf ("wrote %d .mid files and %d .wav files to %s\n", (int) presets().size() - 1, (int) NumGenres, outDir.getFullPathName().toRawUTF8());
+        // every ROLL BASS preset over its genre's drums, to hear the dips and fills
+        int rollWavs = 0;
+        for (auto& preset : presets())
+        {
+            if (preset.category != "ROLL BASS") continue;
+            const int g = (int) preset.values.at ("genre");
+            const double bpm = genreInfo (g).bpm, sr = 44100.0;
+            Settings d; d.genre = g; d.role = Drums; d.bars = 4; d.seed = 7;
+            auto mix = render (generate (d), Drums, bpm, sr, 2);
+            const auto bassLoop = generate (settingsFor (preset));
+            const auto b = render (bassLoop, Bass, bpm, sr, juce::jmax (1, (int) std::round (32.0 / bassLoop.lengthBeats))); // 8 bars, like the drums
+            const int len = juce::jmin (mix.getNumSamples(), b.getNumSamples());
+            juce::AudioBuffer<float> out (2, len);
+            for (int ch = 0; ch < 2; ++ch) { out.copyFrom (ch, 0, mix, ch, 0, len); out.addFrom (ch, 0, b, ch, 0, len, 1.0f); }
+            out.applyGain (0.8f / juce::jmax (0.01f, out.getMagnitude (0, len)));
+            writeWav (wavDir.getChildFile ("ROLL BASS - " + juce::File::createLegalFileName (preset.name) + ".wav"), out, sr);
+            ++rollWavs;
+        }
+        std::printf ("wrote %d .mid files and %d .wav files to %s\n", (int) presets().size() - 1, (int) NumGenres + rollWavs, outDir.getFullPathName().toRawUTF8());
     }
 
     std::printf (failures == 0 ? "ALL PASSED\n" : "%d FAILURES\n", failures);

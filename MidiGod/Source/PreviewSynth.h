@@ -15,6 +15,17 @@ public:
 
     void noteOn (int note, int velocity)
     {
+        // legato: a bass or acid note that starts while another is held slides the held voice to it
+        if (sound == Bass || sound == Acid)
+            for (auto& c : voices)
+                if (c.active && ! c.released && c.drum < 0)
+                {
+                    c.note = note;
+                    c.target = 440.0 * std::exp2 ((note - 69) / 12.0);
+                    c.vel = juce::jmax (c.vel, velocity / 127.0f);
+                    return;
+                }
+
         Voice* v = nullptr;
         for (auto& c : voices) if (! c.active) { v = &c; break; }
         if (v == nullptr) // steal the oldest
@@ -28,7 +39,7 @@ public:
         v->vel = velocity / 127.0f;
         v->age = ++counter;
         v->kind = sound;
-        v->freq = 440.0 * std::exp2 ((note - 69) / 12.0);
+        v->freq = v->target = 440.0 * std::exp2 ((note - 69) / 12.0);
         v->drum = sound == Drums ? drumKind (note) : -1;
     }
 
@@ -38,7 +49,10 @@ public:
             if (v.active && v.note == note && ! v.released) v.released = true;
     }
 
-    void allOff() { for (auto& v : voices) v.active = false; }
+    void allOff() { for (auto& v : voices) v.active = false; bendFactor = 1.0; }
+
+    // pitch wheel, in semitones (the pitch dips of ROLL BASS)
+    void setBend (float semis) { bendFactor = std::exp2 (semis / 12.0); }
 
     void render (float* left, float* right, int numSamples, float gain)
     {
@@ -61,7 +75,7 @@ private:
         int note = 60, kind = Bass, drum = -1;
         juce::uint32 age = 0;
         float vel = 1.0f, env = 0.0f, fenv = 1.0f, ic1 = 0.0f, ic2 = 0.0f, hp = 0.0f;
-        double freq = 440.0, ph1 = 0.0, ph2 = 0.3, t = 0.0;
+        double freq = 440.0, target = 440.0, ph1 = 0.0, ph2 = 0.3, t = 0.0;
         bool decaying = false;
     };
 
@@ -111,7 +125,9 @@ private:
         if (v.released && v.env < 1.0e-4f) { v.active = false; return 0.0f; }
         v.fenv -= v.fenv * dt / p.fdecay * 3.0f;
 
-        const double inc1 = v.freq / sr, inc2 = v.freq * std::exp2 (p.detune / 12.0) / sr;
+        v.freq += (v.target - v.freq) * (1.0 - std::exp (-1.0 / (0.015 * sr))); // fast 303-style slide
+        const double f = v.freq * bendFactor;
+        const double inc1 = f / sr, inc2 = f * std::exp2 (p.detune / 12.0) / sr;
         float osc = (float) (2.0 * v.ph1 - 1.0) - polyBlep (v.ph1, inc1);
         if (p.detune > 0.0f) osc = 0.5f * (osc + (float) (2.0 * v.ph2 - 1.0) - polyBlep (v.ph2, inc2));
         v.ph1 += inc1; if (v.ph1 >= 1.0) v.ph1 -= 1.0;
@@ -172,7 +188,7 @@ private:
     }
 
     std::array<Voice, 24> voices;
-    double sr = 44100.0;
+    double sr = 44100.0, bendFactor = 1.0;
     int sound = Bass;
     juce::uint32 counter = 0, seed = 12345;
 };

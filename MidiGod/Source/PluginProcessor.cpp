@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "../../Common/UpdateNotice.h"
 #include "PluginEditor.h"
 #include "Presets.h"
 
@@ -7,8 +8,9 @@ using namespace midigod;
 namespace
 {
     // Which parameters say what the loop is, how it is shaped, how audio notes are finished, and how audio is analysed
-    const std::vector<const char*> kIdentity = { "genre", "role", "seed" };
-    const std::vector<const char*> kShape = { "key", "scale", "bars", "grid", "octave", "density", "swing", "gate", "dyn", "human", "move" };
+    const std::vector<const char*> kIdentity = { "genre", "role", "seed", "rbMut" };
+    const std::vector<const char*> kShape = { "key", "scale", "bars", "grid", "octave", "density", "swing", "gate", "dyn", "human", "move",
+                                              "rbStyle", "rbSync", "rbKick", "rbOct", "rbDip", "rbVar", "rbEvolve", "rbGlide", "rbGroove" };
     const std::vector<const char*> kFinish = { "a2mQuant", "a2mSnap", "key", "scale", "octave" };
     const std::vector<const char*> kAnalysis = { "a2mMode", "a2mSens" };
     const juce::String dot = juce::String::fromUTF8 (" \xc2\xb7 ");
@@ -80,6 +82,12 @@ void MidiGodProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Mid
     // whatever is still sounding when the loop changes or the transport jumps gets its note-off now
     auto flush = [this]
     {
+        if (bent)
+        {
+            generated.addEvent (juce::MidiMessage::pitchWheel (1, 8192), 0);
+            synth.setBend (0.0f);
+            bent = false;
+        }
         for (int p = 0; p < 128; ++p)
             if (sounding[(size_t) p] > 0)
             {
@@ -127,6 +135,9 @@ void MidiGodProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Mid
             occurrences (note.start, true, note);
             occurrences (note.start + note.length, false, note);
         }
+        for (const auto& b : pat->bends)
+            for (double a = b.beat + std::ceil ((start - b.beat) / L) * L; a < end; a += L)
+                events.push_back ({ juce::jlimit (0, n - 1, (int) ((a - start) / perSample)), false, 0, 0, false, true, b.value });
         uiBeat = std::fmod (std::fmod (start, L) + L, L);
     }
 
@@ -160,6 +171,13 @@ void MidiGodProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Mid
     for (const auto& e : events)
     {
         renderTo (e.sample);
+        if (e.bend)
+        {
+            generated.addEvent (juce::MidiMessage::pitchWheel (1, bendTo14Bit (e.bendValue)), e.sample);
+            synth.setBend (e.bendValue * kBendRangeSemis);
+            bent = e.bendValue != 0.0f;
+            continue;
+        }
         if (! e.fromHost)
         {
             auto& count = sounding[(size_t) e.note];
@@ -257,18 +275,33 @@ void MidiGodProcessor::regenerate()
     std::atomic_store (&live, std::shared_ptr<const Pattern> (std::move (p)));
 }
 
-void MidiGodProcessor::godMode()
+void MidiGodProcessor::setParam (const char* id, float value)
 {
-    if (auto* prm = apvts.getParameter ("seed"))
+    if (auto* prm = apvts.getParameter (id))
     {
-        const int now = (int) v ("seed");
-        int next = now;
-        while (next == now) next = 1 + juce::Random::getSystemRandom().nextInt (999);
-        undo.beginNewTransaction();
         prm->beginChangeGesture();
-        prm->setValueNotifyingHost (prm->convertTo0to1 ((float) next));
+        prm->setValueNotifyingHost (prm->convertTo0to1 (value));
         prm->endChangeGesture();
     }
+}
+
+void MidiGodProcessor::godMode()
+{
+    const int now = (int) v ("seed");
+    int next = now;
+    while (next == now) next = 1 + juce::Random::getSystemRandom().nextInt (999);
+    undo.beginNewTransaction();
+    setParam ("seed", (float) next);
+    setParam ("rbMut", 0.0f);
+}
+
+void MidiGodProcessor::mutate()
+{
+    const int now = (int) v ("rbMut");
+    int next = now;
+    while (next == now) next = 1 + juce::Random::getSystemRandom().nextInt (999);
+    undo.beginNewTransaction();
+    setParam ("rbMut", (float) next);
 }
 
 void MidiGodProcessor::backToGenerator()
@@ -395,7 +428,7 @@ void MidiGodProcessor::setStateInformation (const void* data, int sizeInBytes)
     regenerate();
 }
 
-juce::AudioProcessorEditor* MidiGodProcessor::createEditor() { return new MidiGodEditor (*this); }
+juce::AudioProcessorEditor* MidiGodProcessor::createEditor() { return skazi::withUpdateNotice (new MidiGodWindow (*this)); }
 
 const std::vector<skazi::Preset>& MidiGodProcessor::presetList() const { return presets(); }
 skazi::Preset MidiGodProcessor::randomPreset (juce::Random& rng) const { return midigod::randomPreset (rng); }

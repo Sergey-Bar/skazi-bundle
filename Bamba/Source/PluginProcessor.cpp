@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "../../Common/UpdateNotice.h"
 #include "PluginEditor.h"
 #include "Presets.h"
 
@@ -140,7 +141,7 @@ void BambaProcessor::presetLoaded (const skazi::Preset& p)
     loadSample (list[pick].file);
 }
 
-juce::AudioProcessorEditor* BambaProcessor::createEditor() { return new BambaEditor (*this); }
+juce::AudioProcessorEditor* BambaProcessor::createEditor() { return skazi::withUpdateNotice (new BambaEditor (*this)); }
 
 const std::vector<skazi::Preset>& BambaProcessor::presetList() const { return bamba::presets(); }
 skazi::Preset BambaProcessor::randomPreset (juce::Random& rng) const { return bamba::randomPreset (rng); }

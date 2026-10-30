@@ -492,7 +492,7 @@ struct LfoView : LiveView
     explicit LfoView (KubeProcessor& p) : proc (p) {}
     juce::uint64 state() override
     {
-        return (Sig() << proc.v ("lfoShape") << std::round (proc.engine.uiLfo.load (std::memory_order_relaxed) * 100.0f)).h;
+        return (Sig() << proc.v ("lfoOn") << proc.v ("lfoShape") << std::round (proc.engine.uiLfo.load (std::memory_order_relaxed) * 100.0f)).h;
     }
     void paint (juce::Graphics& g) override
     {
@@ -519,8 +519,16 @@ struct LfoView : LiveView
             if (i == 0) p.startNewSubPath (x, in.getCentreY() - y * in.getHeight() * 0.45f);
             else p.lineTo (x, in.getCentreY() - y * in.getHeight() * 0.45f);
         }
-        g.setColour (col::second);
+        const bool on = proc.v ("lfoOn") > 0.5f;
+        g.setColour (col::second.withAlpha (on ? 1.0f : 0.25f));
         g.strokePath (p, juce::PathStrokeType (2.0f));
+        if (! on)
+        {
+            g.setColour (col::second.withAlpha (0.7f));
+            g.setFont (font (13.0f));
+            g.drawText ("LFO OFF", r, juce::Justification::centred);
+            return;
+        }
         const float now = proc.engine.uiLfo.load (std::memory_order_relaxed);
         const float y = in.getCentreY() - now * in.getHeight() * 0.45f;
         g.setColour (col::accent.withAlpha (0.5f));
@@ -732,13 +740,13 @@ struct ModTab : juce::Component
 {
     explicit ModTab (KubeProcessor& p)
         : proc (p), lfo ("LFO", col::second), pitch ("PITCH ENVELOPE  /  ZAP", col::hot), voice ("VOICE", col::glow),
-          shape (p.apvts, "lfoShape", "SHAPE"), sync (p.apvts, "lfoSync", "SYNC"), rate (p.apvts, "lfoRate", "RATE"), hz (p.apvts, "lfoHz", "RATE"),
+          lfoOn (p.apvts, "lfoOn", "ON"), shape (p.apvts, "lfoShape", "SHAPE"), sync (p.apvts, "lfoSync", "SYNC"), rate (p.apvts, "lfoRate", "RATE"), hz (p.apvts, "lfoHz", "RATE"),
           view (p), toCut (p.apvts, "lfoCut", "> CUTOFF"), toPos (p.apvts, "lfoPos", "> POSITION"), toFold (p.apvts, "lfoFold", "> FOLD"),
           pAmt (p.apvts, "pitchAmt", "AMOUNT"), pDec (p.apvts, "pitchDec", "DECAY"), envPos (p.apvts, "envPos", "F.ENV > POS"),
           mode (p.apvts, "mode", "MODE"), glide (p.apvts, "glide", "GLIDE"), vel (p.apvts, "vel", "VELOCITY")
     {
         for (juce::Component* c : { (juce::Component*) &lfo, (juce::Component*) &pitch, (juce::Component*) &voice }) addAndMakeVisible (c);
-        for (juce::Component* c : { (juce::Component*) &shape, (juce::Component*) &sync, (juce::Component*) &rate, (juce::Component*) &hz,
+        for (juce::Component* c : { (juce::Component*) &lfoOn, (juce::Component*) &shape, (juce::Component*) &sync, (juce::Component*) &rate, (juce::Component*) &hz,
                                     (juce::Component*) &view, (juce::Component*) &toCut, (juce::Component*) &toPos, (juce::Component*) &toFold })
             lfo.addAndMakeVisible (c);
         for (juce::Component* c : { (juce::Component*) &pAmt, (juce::Component*) &pDec, (juce::Component*) &envPos }) pitch.addAndMakeVisible (c);
@@ -762,6 +770,7 @@ struct ModTab : juce::Component
         r.removeFromTop (10);
         voice.setBounds (r);
 
+        lfoOn.setBounds (lfo.getLocalBounds().reduced (10).removeFromTop (26).removeFromRight (64));
         auto l = lfo.content();
         auto top = l.removeFromTop (44);
         shape.setBounds (top.removeFromLeft (120));
@@ -782,7 +791,7 @@ struct ModTab : juce::Component
     }
     KubeProcessor& proc;
     Panel lfo, pitch, voice;
-    Choice shape; Toggle sync; Choice rate; Knob hz;
+    Toggle lfoOn; Choice shape; Toggle sync; Choice rate; Knob hz;
     LfoView view;
     Knob toCut, toPos, toFold, pAmt, pDec, envPos;
     Choice mode; Knob glide, vel;

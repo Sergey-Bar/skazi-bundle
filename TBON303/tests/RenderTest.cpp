@@ -305,6 +305,46 @@ int main (int argc, char** argv)
         check (recipes.size() > (size_t) (n * 8 / 10), msg);
     }
 
+    // 5b. Wheels: pitch bend moves the note by the set range, the mod wheel brightens the filter
+    {
+        const double sr2 = 88200.0;
+        double octavesUp = 0.0;
+        auto play = [&] (double bendSemis, double modWheel, double& hz, double& bright)
+        {
+            AcidVoice v;
+            v.prepare (sr2);
+            VoiceParams p;
+            p.cutoffHz = (float) (300.0 * std::exp2 (octavesUp)); p.resonance = 0.0f; p.envMod = 0.0f; p.drift = 0.0f; p.ampDecaySec = 8.0f;
+            v.setBend (bendSemis);
+            v.setModWheel (modWheel, 0, 1.0);
+            v.noteOn (48, false, false);
+            std::vector<float> y;
+            for (int i = 0; i < (int) sr2; ++i) y.push_back (v.render (p));
+            int crossings = 0; double sum = 0.0, diff = 0.0;
+            const int from = (int) (sr2 * 0.5);
+            for (int i = from; i < (int) y.size(); ++i)
+            {
+                if (y[(size_t) i - 1] < 0.0f && y[(size_t) i] >= 0.0f) ++crossings;
+                sum += std::fabs (y[(size_t) i]);
+                diff += std::fabs (y[(size_t) i] - y[(size_t) i - 1]);
+            }
+            hz = crossings / 0.5;
+            bright = diff / std::max (1.0e-9, sum);
+        };
+        double hz0, b0, hzUp, bUp, hzDown, bDown, hzMod, bMod, hzOpen, bOpen;
+        play (0.0, 0.0, hz0, b0);
+        play (12.0, 0.0, hzUp, bUp);
+        play (-24.0, 0.0, hzDown, bDown);
+        play (0.0, 1.0, hzMod, bMod);
+        octavesUp = 4.0;
+        play (0.0, 0.0, hzOpen, bOpen); // the cutoff knob 4 octaves up, what a full mod wheel should sound like
+        char msg[200];
+        std::snprintf (msg, sizeof msg, "pitch wheel: %.0f Hz, +12 st %.0f Hz, -24 st %.0f Hz", hz0, hzUp, hzDown);
+        check (std::abs (hzUp / hz0 - 2.0) < 0.1 && std::abs (hzDown / hz0 - 0.25) < 0.05, msg);
+        std::snprintf (msg, sizeof msg, "mod wheel opens the filter 4 octaves: brightness %.4f -> %.4f (cutoff +4 oct: %.4f)", b0, bMod, bOpen);
+        check (bOpen > b0 * 1.02 && std::abs (bMod - bOpen) < (bOpen - b0) * 0.2, msg);
+    }
+
     // 6. Cost of building presets: a host may ask for all program names at once
     {
         const auto t0 = std::chrono::steady_clock::now();

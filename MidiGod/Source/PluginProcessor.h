@@ -41,6 +41,9 @@ public:
     // GOD MODE: a fresh variation of the current genre and role (back to the generator if audio was loaded)
     void godMode();
 
+    // MUTATE: the ROLL BASS motif with a few steps changed; GOD MODE clears it
+    void mutate();
+
     // Audio to MIDI, analysed on a background thread at the project tempo
     void convertAudio (const juce::File& file);
     bool isAnalysing() const { return analysing.load(); }
@@ -60,6 +63,7 @@ private:
     void regenerate();
     std::vector<float> watched (const std::vector<const char*>& ids) const;
     void installAudio (midigod::ConvertResult res, const juce::File& file, int mode);
+    void setParam (const char* id, float value);
 
     std::shared_ptr<const midigod::Pattern> live, retired[2];
 
@@ -74,7 +78,7 @@ private:
     std::vector<float> lastIdentity, lastShape, lastFinish, lastAnalysis;
     void rememberWatched();
 
-    struct Event { int sample; bool on; int note, velocity; bool fromHost; };
+    struct Event { int sample; bool on; int note, velocity; bool fromHost; bool bend = false; float bendValue = 0.0f; };
     std::vector<Event> events;
     juce::MidiBuffer generated;
     juce::ThreadPool pool { juce::ThreadPoolOptions{}.withNumberOfThreads (1) };
@@ -84,6 +88,7 @@ private:
     // playback
     midigod::PreviewSynth synth;
     std::array<int, 128> sounding {};
+    bool bent = false;
     const midigod::Pattern* playingPattern = nullptr;
     double freeBeat = 0.0, expectedBeat = -1.0;
     bool wasRunning = false;

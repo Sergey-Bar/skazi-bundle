@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "../../Common/UpdateNotice.h"
 #include "PluginEditor.h"
 #include "Presets.h"
 
@@ -106,7 +107,7 @@ std::vector<std::pair<int, float>> BullyProcessor::modsFor (const juce::String& 
     return out;
 }
 
-juce::AudioProcessorEditor* BullyProcessor::createEditor() { return new BullyEditor (*this); }
+juce::AudioProcessorEditor* BullyProcessor::createEditor() { return skazi::withUpdateNotice (new BullyEditor (*this)); }
 
 const std::vector<skazi::Preset>& BullyProcessor::presetList() const { return bully::presets(); }
 skazi::Preset BullyProcessor::randomPreset (juce::Random& rng) const { return bully::randomPreset (rng); }

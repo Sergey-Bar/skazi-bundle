@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "../../Common/UpdateNotice.h"
 #include "PluginEditor.h"
 #include "Presets.h"
 
@@ -31,7 +32,7 @@ void SalatProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiB
     finishBlock (buffer); // smooth preset changes
 }
 
-juce::AudioProcessorEditor* SalatProcessor::createEditor() { return new SalatEditor (*this); }
+juce::AudioProcessorEditor* SalatProcessor::createEditor() { return skazi::withUpdateNotice (new SalatEditor (*this)); }
 
 const std::vector<skazi::Preset>& SalatProcessor::presetList() const { return salat::presets(); }
 skazi::Preset SalatProcessor::randomPreset (juce::Random& rng) const { return salat::randomPreset (rng); }

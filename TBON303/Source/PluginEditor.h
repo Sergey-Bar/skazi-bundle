@@ -45,6 +45,17 @@ private:
     juce::String text;
 };
 
+/** A pitch or mod wheel: a ribbed wheel in a slot with a bright marker line. */
+class Wheel : public juce::Slider
+{
+public:
+    explicit Wheel (juce::String name) : label (std::move (name)) {}
+    void paint (juce::Graphics&) override;
+
+private:
+    juce::String label;
+};
+
 /** The whole front panel, laid out at a fixed design size. */
 class SynthPanel : public juce::Component, private juce::Timer
 {
@@ -65,6 +76,7 @@ private:
 
     void timerCallback() override;
     Knob& knob (const juce::String& id, const juce::String& text, bool deck, bool bipolar = false);
+    Knob& knobAs (const juce::String& key, const juce::String& id, const juce::String& text); // a second knob for a parameter shown elsewhere too
     Selector& selector (const juce::String& id, const juce::String& text, bool deck);
     void placeRow (juce::Rectangle<int> area, const juce::StringArray& ids, int itemWidth);
     void buildTexture();
@@ -82,13 +94,15 @@ private:
     void showPresetMenu();
     void stepPreset (int delta);
 
-    juce::TextButton synthTabBtn { "SYNTH" }, modsTabBtn { "MODS" }, fxTabBtn { "FX" }, seqTabBtn { "SEQ" };
+    juce::TextButton synthTabBtn { "SYNTH" }, modsTabBtn { "ENV" }, fxTabBtn { "FX" }, seqTabBtn { "SEQ" };
     std::vector<juce::Component*> synthItems, modsItems, fxItems, seqItems;
     int currentTab = 0;
 
     juce::TextButton seqOnBtn { "SEQ ON" };
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> seqOnAttachment;
     juce::MidiKeyboardComponent keyboard;
+    Wheel pitchWheel { "PITCH" }, modWheel { "MOD" }; // on-screen wheels; the pitch wheel springs back to the middle
+    juce::Rectangle<int> wheelFrame;
     juce::TextButton generateBtn { "GENERATE" }, mutateBtn { "MUTATE" }, clearBtn { "CLEAR" },
                      shiftLeftBtn { "<" }, shiftRightBtn { ">" };
 
