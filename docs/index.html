@@ -3,16 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://api.github.com; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.github.com; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>SKAZI · 19 Free Psytrance Plugins</title>
 <meta name="description" content="SKAZI Bundle: 19 synths and effects for psytrance, techno and beyond. VST3 and AU for Windows and Mac. Free download.">
 <meta property="og:title" content="SKAZI · 19 Free Psytrance Plugins">
 <meta property="og:description" content="Synths, kicks, acid and bass lines, MIDI patterns, risers, chops, sidechain, tape delay and saturation. VST3 / AU for Windows and Mac.">
-<meta property="og:image" content="https://slazoasher.github.io/skazi-bundle/img/skazi-artist.png">
+<meta property="og:image" content="https://slazoasher.github.io/skazi-bundle/img/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://slazoasher.github.io/skazi-bundle/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0b0b0b">
+<link rel="canonical" href="https://slazoasher.github.io/skazi-bundle/">
+<link rel="icon" type="image/png" sizes="64x64" href="img/favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#07070a; --bg2:#0e0e12; --card:#121217; --line:#23232b; --text:#f2f2f4; --dim:#9a9aa6;
@@ -308,13 +317,13 @@
       <div class="daw-compat" aria-label="Works with Cubase, Ableton Live, FL Studio, Logic Pro, Bitwig Studio, Studio One and Reaper">
         <span class="daw-label">WORKS WITH</span>
         <ul class="daw-icons">
-          <li title="Cubase" aria-label="Cubase" tabindex="0"><img class="daw-icon" src="img/daw-cubase.svg" alt="" width="24" height="24"></li>
-          <li title="Ableton Live" aria-label="Ableton Live" tabindex="0"><img class="daw-icon" src="img/daw-ableton.png" alt="" width="24" height="24"></li>
-          <li title="FL Studio" aria-label="FL Studio" tabindex="0"><img class="daw-icon" src="img/daw-fl-studio.ico" alt="" width="24" height="24"></li>
-          <li title="Logic Pro" aria-label="Logic Pro" tabindex="0"><img class="daw-icon" src="img/daw-logic-pro.png" alt="" width="24" height="24"></li>
-          <li title="Bitwig Studio" aria-label="Bitwig Studio" tabindex="0"><img class="daw-icon" src="img/daw-bitwig.png" alt="" width="24" height="24"></li>
-          <li title="Studio One" aria-label="Studio One" tabindex="0"><img class="daw-icon" src="img/daw-studio-one.png" alt="" width="24" height="24"></li>
-          <li title="Reaper" aria-label="Reaper" tabindex="0"><img class="daw-icon" src="img/daw-reaper.png" alt="" width="24" height="24"></li>
+          <li title="Cubase" aria-label="Cubase"><img class="daw-icon" src="img/daw-cubase.svg" alt="" width="24" height="24"></li>
+          <li title="Ableton Live" aria-label="Ableton Live"><img class="daw-icon" src="img/daw-ableton.png" alt="" width="24" height="24"></li>
+          <li title="FL Studio" aria-label="FL Studio"><img class="daw-icon" src="img/daw-fl-studio.ico" alt="" width="24" height="24"></li>
+          <li title="Logic Pro" aria-label="Logic Pro"><img class="daw-icon" src="img/daw-logic-pro.png" alt="" width="24" height="24"></li>
+          <li title="Bitwig Studio" aria-label="Bitwig Studio"><img class="daw-icon" src="img/daw-bitwig.png" alt="" width="24" height="24"></li>
+          <li title="Studio One" aria-label="Studio One"><img class="daw-icon" src="img/daw-studio-one.png" alt="" width="24" height="24"></li>
+          <li title="Reaper" aria-label="Reaper"><img class="daw-icon" src="img/daw-reaper.png" alt="" width="24" height="24"></li>
         </ul>
       </div>
     </div>
@@ -337,6 +346,7 @@
         <button class="info-tab" type="button" role="tab" aria-selected="false" aria-controls="guide-faq" id="tab-guide-faq" data-guide-tab="faq">FAQ</button>
       </div>
       <div class="info-panel is-active" id="guide-install" role="tabpanel" aria-labelledby="tab-guide-install" data-guide-panel="install">
+        <h3 class="visually-hidden">Installation steps</h3>
         <div class="tabs" role="tablist" aria-label="Choose your operating system"><button class="tab on" type="button" data-t="win" aria-controls="win" aria-pressed="true">Windows</button><button class="tab" type="button" data-t="mac" aria-controls="mac" aria-pressed="false">Mac</button></div>
         <div class="steps on" id="win"><div class="step"><div class="n">01</div><h4>Download &amp; close your DAW</h4><p>Get the installer above and close Cubase, Ableton or your DAW.</p></div><div class="step"><div class="n">02</div><h4>Run the installer</h4><p>If Windows shows <b>“Windows protected your PC”</b>, click <b>More info → Run anyway</b>. Choose your plugins and install.</p></div><div class="step"><div class="n">03</div><h4>Rescan &amp; play</h4><p>Rescan plugins in your DAW. VST3 files go to <code>Common Files\VST3\SKAZI</code>.</p></div></div>
         <div class="steps" id="mac"><div class="step"><div class="n">01</div><h4>Download &amp; close your DAW</h4><p>Get the Mac installer above and quit Logic, Ableton or your DAW.</p></div><div class="step"><div class="n">02</div><h4>Open the installer</h4><p>Right-click the <b>.pkg</b>, choose <b>Open</b>, then confirm to continue.</p></div><div class="step"><div class="n">03</div><h4>Rescan &amp; play</h4><p>Rescan plugins in your DAW. AU and VST3 versions are installed for compatible hosts.</p></div></div>
@@ -365,7 +375,7 @@
     <div class="grid" id="plugin-reel">
 
       <article class="card" data-preview="wide"><div class="pic"><img src="img/bully-480.webp" srcset="img/bully-480.webp 480w, img/bully-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/bully.png?v=3" width="1548" height="886" alt="BULLY" class="zoom" loading="lazy"></div>
-        <div class="body"><span class="badge inst">New · Instrument</span><h3>BUL<em>LY</em></h3><div class="sub">Analog-character wavetable monster</div>
+        <div class="body"><span class="badge inst">Instrument</span><h3>BUL<em>LY</em></h3><div class="sub">Analog-character wavetable monster</div>
           <p>Three wavetable oscillators, analog drift and a saturated ladder filter. Shape your sound with drag-and-drop modulation, chaos generators and a full FX rack.</p>
           <div class="chips"><span class="chip hot">462 presets</span><span class="chip">SHARP 24 filter</span><span class="chip">FULL RANDOM</span><span class="chip">Drag &amp; drop mod</span><span class="chip">Chaos LFOs</span><span class="chip">Psy · Afro · Growl</span></div><p class="card-changelog" hidden>New SHARP 24 filter: a strong resonant ladder whose cutoff sits right where the knob says.</p><button class="card-more" type="button">What's new<span aria-hidden="true">+</span></button></div></article>
 
@@ -385,22 +395,22 @@
           <div class="chips"><span class="chip hot">250 presets</span><span class="chip">7 delay types</span><span class="chip">Echo filter + drive</span><span class="chip">Pitch on repeats</span><span class="chip">Freeze</span></div><p class="card-changelog" hidden>Much wider echoes: every delay type now spreads left and right, even on a mono lead or vocal, and WIDTH opens the echoes as well as the reverb. Ping-pong stays hard left and right. Delay presets are wetter, 50 to 75%.</p><button class="card-more" type="button">What's new<span aria-hidden="true">+</span></button></div></article>
 
       <article class="card" data-preview="acid"><div class="pic"><img src="img/tbon303-480.webp" srcset="img/tbon303-480.webp 480w, img/tbon303-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/tbon303.png?v=1" width="1210" height="568" alt="TBON 303" class="zoom" loading="lazy"></div>
-        <div class="body"><span class="badge inst">New · Instrument</span><h3>TBON <em>303</em></h3><div class="sub">Acid bass line synth · by Asher Swissa</div>
+        <div class="body"><span class="badge inst">Instrument</span><h3>TBON <em>303</em></h3><div class="sub">Acid bass line synth · by Asher Swissa</div>
           <p>Classic acid movement with accent, slide and a powerful resonant filter. Build patterns in the sequencer and push fourteen drive flavours.</p>
           <div class="chips"><span class="chip hot">544 presets</span><span class="chip">Hard acid</span><span class="chip">Accent + slide</span><span class="chip">14 drive types</span><span class="chip">Acid sequencer</span><span class="chip">Win + Mac · VST3 / AU</span></div><p class="card-changelog" hidden>Full ADSR on the amp and on the filter (ENV tab), working pitch and mod wheels, and pitch bend range from 0 to 24 semitones. The mod wheel opens the filter, adds vibrato, or both.</p><button class="card-more" type="button">What's new<span aria-hidden="true">+</span></button></div></article>
 
       <article class="card" data-preview="stutter"><div class="pic"><img src="img/salat-480.webp" srcset="img/salat-480.webp 480w, img/salat-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/salat.png?v=2" width="1200" height="680" alt="SALAT" class="zoom" loading="lazy"></div>
-        <div class="body"><span class="badge fx">New · Effect</span><h3>SA<em>LAT</em></h3><div class="sub">Glitch multi-FX + RISE</div>
+        <div class="body"><span class="badge fx">Effect</span><h3>SA<em>LAT</em></h3><div class="sub">Glitch multi-FX + RISE</div>
           <p>Rearrange your groove with synced chops, stutters and tape stops. Add a full FX chain and use RISE for long, tempo-locked pitch builds.</p>
           <div class="chips"><span class="chip hot">104 presets</span><span class="chip">MAKE A SALAT</span><span class="chip">RISE up to 4 octaves</span><span class="chip">Chop · drive · crush</span><span class="chip">Delay · reverb</span></div><p class="card-changelog" hidden>RISE: pitch build-ups over 2 to 16 bars, up to 4 octaves, starting and ending on your bar lines.</p><button class="card-more" type="button">What's new<span aria-hidden="true">+</span></button></div></article>
 
       <article class="card" data-preview="arp"><div class="pic"><img src="img/midigod-480.webp" srcset="img/midigod-480.webp 480w, img/midigod-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/midigod.png?v=2" width="1200" height="858" alt="MIDI GOD" class="zoom" loading="lazy"></div>
-        <div class="body"><span class="badge inst">New · MIDI</span><h3>MIDI <em>GOD</em></h3><div class="sub">MIDI pattern generator + audio to MIDI</div>
+        <div class="body"><span class="badge inst">MIDI</span><h3>MIDI <em>GOD</em></h3><div class="sub">MIDI pattern generator + audio to MIDI</div>
           <p>Generate basslines, melodies, arps, chords and drums in your key across ten genres. ROLL BASS writes rolling psy and techno basslines around the kick. Drag MIDI into your DAW or turn audio into MIDI.</p>
           <div class="chips"><span class="chip hot">126 presets</span><span class="chip">ROLL BASS</span><span class="chip">10 genres x 9 roles</span><span class="chip">Drag MIDI to the DAW</span><span class="chip">Audio to MIDI</span></div><p class="card-changelog" hidden>MIDI GOD 1.1: ROLL BASS rolls psy and techno basslines around the kick with 6 styles, glide, pitch dips, octave jumps, groove, fills and EVOLVE. MUTATE changes the line without losing it, audio to MIDI follows slides, 20 new presets and a bigger window.</p><button class="card-more" type="button">What's new<span aria-hidden="true">+</span></button></div></article>
 
       <article class="card" data-preview="kick"><div class="pic"><img src="img/kickass-480.webp" srcset="img/kickass-480.webp 480w, img/kickass-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/kickass.png?v=1" width="1280" height="660" alt="KICKASS" class="zoom" loading="lazy"></div>
-        <div class="body"><span class="badge inst">New · Instrument</span><h3>KICK<em>ASS</em></h3><div class="sub">Kick drum synth · by Asher Swissa</div>
+        <div class="body"><span class="badge inst">Instrument</span><h3>KICK<em>ASS</em></h3><div class="sub">Kick drum synth · by Asher Swissa</div>
           <p>Build punchy kicks with a two-stage pitch envelope, precise decay, three-band EQ and clean-to-driven tone. Layer your own samples for extra character.</p>
           <div class="chips"><span class="chip hot">50 presets</span><span class="chip">Snap + sweep pitch</span><span class="chip">3-band EQ</span><span class="chip">Splice kick browser</span><span class="chip">Key track</span></div><button class="card-more" type="button">What's new<span aria-hidden="true">+</span></button></div></article>
 
@@ -430,12 +440,12 @@
           <div class="chips"><span class="chip hot">800 presets</span><span class="chip">Many filter types</span><span class="chip">Glitch</span><span class="chip">Full FX chain</span></div><p class="card-changelog" hidden>The LFO now sweeps over 8, 16 and 32 bars, locked to your song, for long builds. Ladder and Squelch filters no longer keep whistling after the music stops.</p><button class="card-more" type="button">What's new<span aria-hidden="true">+</span></button></div></article>
 
       <article class="card"><div class="pic"><img src="img/kube-480.webp" srcset="img/kube-480.webp 480w, img/kube-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/kube.png?v=1" width="1000" height="780" alt="KUBE" class="zoom" loading="lazy"></div>
-        <div class="body"><span class="badge inst">New · Instrument</span><h3>KU<em>BE</em></h3><div class="sub">Psytrance wavetable synth</div>
+        <div class="body"><span class="badge inst">Instrument</span><h3>KU<em>BE</em></h3><div class="sub">Psytrance wavetable synth</div>
           <p>Two wavetable oscillators with 24 KUBE-only tables (growl, yoy, robot and more), or drag and drop your own Serum .wav wavetables. Two warp slots per oscillator, 16-voice unison with blend and width, sub, noise and wavefold, a filter, mod section and FX rack, in a lime-on-black skin.</p>
           <div class="chips"><span class="chip hot">306 presets</span><span class="chip">Serum .wav import</span><span class="chip">2 warps per osc</span><span class="chip">16-voice unison</span></div><p class="card-changelog" hidden>200 WILD presets in 4 new folders (bass, lead, motion and FX) with every table, warp, FM and fold rolled; RANDOM gives a wild one half the time. The LFO has an ON/OFF button that comes back in time with your song.</p><button class="card-more" type="button">What's new<span aria-hidden="true">+</span></button></div></article>
 
       <article class="card"><div class="pic"><img src="img/quazi-480.webp" srcset="img/quazi-480.webp 480w, img/quazi-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/quazi.png?v=1" width="1120" height="650" alt="QUAZI" class="zoom" loading="lazy"></div>
-        <div class="body"><span class="badge fx">New · Effect</span><h3>QUA<em>ZI</em></h3><div class="sub">4-band fuzz</div>
+        <div class="body"><span class="badge fx">Effect</span><h3>QUA<em>ZI</em></h3><div class="sub">4-band fuzz</div>
           <p>A clean 4-band crossover feeds each band into its own soft, hard, fuzz or tube distortion, with its own drive and level. Drag the crossovers on the screen. The mix blends each band with its clean self, so half-wet never sounds hollow. Stereo width with MONO BASS and a 3-band EQ (low shelf, bell, high shelf) finish the sound.</p>
           <div class="chips"><span class="chip hot">104 presets</span><span class="chip">4 bands x 4 drive types</span><span class="chip">4x oversampled</span><span class="chip">Stereo width + mono bass</span><span class="chip">Post EQ</span></div><button class="card-more" type="button">What's new<span aria-hidden="true">+</span></button></div></article>
 
@@ -493,14 +503,14 @@
 <button class="back-top" type="button" aria-label="Back to top" title="Back to top"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m0 0-6 6m6-6 6 6"/></svg></button>
 
 <div class="lb plugin-dialog" id="lb" role="dialog" aria-modal="true" aria-labelledby="plugin-dialog-title" aria-hidden="true">
-  <div class="plugin-dialog-panel">
+  <div class="plugin-dialog-panel" tabindex="-1">
     <button class="lb-close" type="button" aria-label="Close plugin details"><span>CLOSE</span><span class="close-symbol" aria-hidden="true">×</span></button>
     <div class="plugin-dialog-media"><img alt=""></div>
     <div class="plugin-dialog-body">
       <span class="plugin-dialog-kicker" data-dialog-badge></span>
       <h3 id="plugin-dialog-title" data-dialog-title></h3>
       <p class="plugin-dialog-sub" data-dialog-sub></p>
-      <section class="plugin-dialog-section"><h4>What's new</h4><p data-dialog-changelog></p></section>
+      <section class="plugin-dialog-section" data-dialog-changelog-section><h4>What's new</h4><p data-dialog-changelog></p></section>
       <section class="plugin-dialog-section"><h4>Highlights</h4><p data-dialog-description></p><div class="chips" data-dialog-chips></div></section>
     </div>
   </div>
@@ -575,11 +585,11 @@
     dialogField('description').textContent = card.querySelector('.body > p')?.textContent || '';
     dialogField('chips').replaceChildren(...[...card.querySelectorAll('.chips .chip')].map(chip => chip.cloneNode(true)));
     const changelog = card.querySelector('.card-changelog')?.textContent.trim();
-    dialogField('changelog').textContent = changelog || 'No changes in this release.';
-    dialogField('changelog').classList.toggle('is-empty', !changelog);
+    dialogField('changelog').textContent = changelog || '';
+    dialogField('changelog-section').hidden = !changelog;
     lb.classList.add('on'); lb.setAttribute('aria-hidden','false'); document.body.style.overflow = 'hidden';
     document.querySelectorAll('#main,.back-top,.site-nav,.dl-bar').forEach(el=>el.inert=true);
-    lb.querySelector('.plugin-dialog-panel').scrollTop = 0; lbClose.focus();
+    const panel = lb.querySelector('.plugin-dialog-panel'); panel.scrollTop = 0; panel.focus({preventScroll:true});
   };
   const closePreview = () => { lb.classList.remove('on'); lb.setAttribute('aria-hidden','true'); document.body.style.overflow = ''; lbImg.removeAttribute('src'); document.querySelectorAll('#main,.back-top,.site-nav,.dl-bar').forEach(el=>el.inert=false); lastImageTrigger?.focus(); };
   document.querySelectorAll("img.zoom").forEach(image => {
@@ -595,7 +605,7 @@
   document.addEventListener('keydown', event => {
     if (!lb.classList.contains('on')) { if (event.key === 'Escape') { closeGuide(); } return; }
     if (event.key === 'Escape') closePreview();
-    if (event.key === 'Tab') { event.preventDefault(); lbClose.focus(); }
+    if (event.key === 'Tab') { event.preventDefault(); const panel = lb.querySelector('.plugin-dialog-panel'); (document.activeElement === lbClose ? panel : lbClose).focus({preventScroll:true}); }
   });
   // Lightweight scroll feedback, disabled automatically for reduced-motion users.
   const progress = document.querySelector('.progress');
