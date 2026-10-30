@@ -15,6 +15,10 @@ on:
 
 # one build per branch at a time: a running build always finishes (and releases), the newest push waits
 # its turn and older waiting pushes are dropped, so releases stay in order without starving each other
+# jobs only read the repo; the release job asks for write access itself
+permissions:
+  contents: read
+
 concurrency:
   group: bundle-${{ github.ref }}
   cancel-in-progress: false
