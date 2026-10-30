@@ -867,3 +867,8 @@ html,body,#site-intro{background:var(--bg)}
 .plugin-dialog-kicker,.plugin-dialog-kicker[class]{display:block;margin:0 0 6px;padding:0;border:0;border-radius:0;background:none;color:var(--acid);font:700 11px/1.4 Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase}
 .spotlight{display:none}
 .plugin-dialog-specs{margin-bottom:14px}
+/* Screenshots rest slightly desaturated and dimmed; full colour returns on hover or focus. */
+#plugins .film-gallery[data-view="grid"] .pic img{filter:saturate(.55) brightness(.82);transition:filter .45s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
+#plugins .film-gallery[data-view="grid"] .card:hover .pic img,#plugins .film-gallery[data-view="grid"] .card:focus-within .pic img{filter:saturate(1) brightness(1)}
+@media(hover:none),(pointer:coarse){#plugins .film-gallery[data-view="grid"] .pic img{filter:saturate(.8) brightness(.92)}}
+@media(prefers-reduced-motion:reduce){#plugins .film-gallery[data-view="grid"] .pic img{transition:none}}
