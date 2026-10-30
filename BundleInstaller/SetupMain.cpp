@@ -49,6 +49,7 @@ namespace
         if (name == "SKACID")         return "Acid bassline synth + evolving sequencer";
         if (name == "SKILTER")        return "Morphing filter + LFO, envelope, step seq";
         if (name == "SKWIDE")         return "Phase-safe stereo imager + Haas super wide";
+        if (name == "SKAZI REVERB")   return "Mega reverb machine: 10 algorithms, reverse, tail filter";
         return "Plugin";
     }
 
