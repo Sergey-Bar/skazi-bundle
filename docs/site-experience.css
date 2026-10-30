@@ -708,3 +708,6 @@ html,body,#site-intro{background:var(--bg)}
 .card:hover .card-more::after{transform:translateX(2px) rotate(-45deg)}
 .card-more:focus-visible{outline:2px solid #fff;outline-offset:3px}
 #plugins .film-gallery[data-view="grid"] .body{padding-bottom:16px}
+.plugin-dialog .chips{display:flex;flex-wrap:wrap;gap:6px}
+.plugin-dialog .chip{font:500 12px/1.5 Inter,sans-serif;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#d0d0d0}
+.plugin-dialog .chip.hot{background:var(--acid);border-color:var(--acid);color:#fff}
