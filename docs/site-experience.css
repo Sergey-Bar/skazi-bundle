@@ -711,3 +711,10 @@ html,body,#site-intro{background:var(--bg)}
 .plugin-dialog .chips{display:flex;flex-wrap:wrap;gap:6px}
 .plugin-dialog .chip{font:500 12px/1.5 Inter,sans-serif;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#d0d0d0}
 .plugin-dialog .chip.hot{background:var(--acid);border-color:var(--acid);color:#fff}
+/* Card format: red eyebrow (type · presets), name, category, three-line description, button. Chips only in the dialog. */
+#plugins .film-gallery[data-view="grid"] .chips{display:none}
+#plugins .film-gallery[data-view="grid"] .body .badge{display:block;margin:0 0 8px;padding:0;border:0;border-radius:0;background:none;color:var(--acid);font:700 11px/1.4 Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase}
+#plugins .film-gallery[data-view="grid"] h3{margin-bottom:6px}
+#plugins .film-gallery[data-view="grid"] .sub{margin-bottom:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#plugins .film-gallery[data-view="grid"] .body>p{margin-bottom:20px}
+.plugin-dialog-kicker{display:inline-flex;padding:5px 11px;border:1px solid var(--acid);border-radius:999px;background:var(--acid);color:#fff;font:600 11px/1.3 Inter,sans-serif;letter-spacing:.08em}
