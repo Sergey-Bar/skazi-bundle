@@ -15,6 +15,7 @@ public:
     void prepare (double sampleRate)
     {
         sr = (float) sampleRate;
+        envFall = std::exp (-1.0f / (0.05f * sr));
         combSize = (int) (sampleRate / 15.0) + 4;
         for (auto& c : chans)
             for (auto& line : c.comb)
@@ -31,7 +32,7 @@ public:
             c.combWrite = 0;
             c.ap.fill (0.0f);
             c.ladder.fill (0.0f);
-            c.ladderOut = c.feedback = c.hold = c.holdCount = c.ringPhase = 0.0f;
+            c.ladderOut = c.feedback = c.hold = c.holdCount = c.ringPhase = c.inEnv = 0.0f;
         }
     }
 
@@ -51,6 +52,7 @@ public:
         const float g  = std::tan (pi * fc / sr);
         const float k  = 2.0f - 1.96f * res;
         const float in = drive > 0.001f ? std::tanh (x * (1.0f + drive * 9.0f)) / (1.0f + drive * 1.5f) : x;
+        c.inEnv = juce::jmax (std::abs (x), c.inEnv * envFall);
 
         switch (type)
         {
@@ -78,8 +80,8 @@ public:
                 return in + c.svf[0].process (in, g, kp).bp * kp * res * 4.0f;
             }
 
-            case ft::LadderLP: return ladder (c, in, g, res * 4.0f) * (1.0f + res * 1.5f);
-            case ft::Squelch:  return ladder (c, in * 2.5f, g, 1.0f + res * 3.6f) * (0.5f + res * 0.6f);
+            case ft::LadderLP: return ladder (c, in, g, tameFeedback (c, res * 4.0f, g)) * (1.0f + res * 1.5f);
+            case ft::Squelch:  return ladder (c, in * 2.5f, g, tameFeedback (c, 1.0f + res * 3.6f, g)) * (0.5f + res * 0.6f);
 
             case ft::CombPlus:  return comb (c, in, fc, 0.3f + res * 0.68f);
             case ft::CombMinus: return comb (c, in, fc, -(0.3f + res * 0.68f));
@@ -214,7 +216,20 @@ private:
         std::array<float, 6> ap {};
         std::array<float, 4> ladder {};
         float ladderOut = 0.0f, feedback = 0.0f, hold = 0.0f, holdCount = 0.0f, ringPhase = 0.0f;
+        float inEnv = 0.0f; // input level follower: lets the ladder resonate past its limit only while sound comes in
     };
+
+    // Past a feedback limit the ladder sings on its own and keeps whistling after the music stops.
+    // The limit falls as the cutoff rises (the one-sample feedback delay): fitted from the filter's
+    // linear stability, within 0.006. Extra feedback over it only stays while sound comes in, so a
+    // screaming acid filter still screams on the track but rings out in under a second after it.
+    static float tameFeedback (const Chan& c, float fb, float g) noexcept
+    {
+        const float G = g / (1.0f + g);
+        const float limit = 0.96f * ((((2.7513f * G - 7.8764f) * G + 9.9545f) * G - 7.7828f) * G + 3.9944f);
+        if (fb <= limit) return fb;
+        return limit + (fb - limit) * juce::jmin (1.0f, c.inEnv * 30.0f);
+    }
 
     // 4-pole ladder with saturated feedback (one-sample feedback delay, good enough for a creative filter).
     static float ladder (Chan& c, float x, float g, float fb) noexcept
@@ -258,7 +273,7 @@ private:
     }
 
     std::array<Chan, maxChannels> chans;
-    float sr = 44100.0f;
+    float sr = 44100.0f, envFall = 0.9995f;
     int combSize = 4;
     int type = ft::LP24;
 };
