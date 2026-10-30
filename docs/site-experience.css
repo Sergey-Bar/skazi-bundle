@@ -795,3 +795,4 @@ html,body,#site-intro{background:var(--bg)}
 .card:hover .card-more{background:var(--btn-bg-hover);border-color:var(--btn-line-hover);color:#fff}
 .gallery-view button[aria-pressed="true"],.gallery-filter button[aria-pressed="true"],.info-tab.is-active,.tab.on{background:var(--acid);border-color:var(--acid);color:#fff}
 .gallery-view button[aria-pressed="true"]:hover,.gallery-filter button[aria-pressed="true"]:hover{background:#c90812;border-color:#c90812}
+.hero-proof b[data-downloads]{min-width:5ch;display:inline-block;margin-right:0}

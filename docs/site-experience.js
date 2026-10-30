@@ -121,6 +121,22 @@
     document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!toast.hidden)hideToast();});
     options.forEach(option=>option.addEventListener('click',()=>{closeChooser(false);showToast(option.dataset.dl);}));
 
+    // Social proof: installer downloads summed over every release, rounded down to the hundred.
+    const downloads=document.querySelector('[data-downloads]');
+    if(downloads){
+      const show=total=>{const rounded=Math.max(1000,Math.floor(total/100)*100);downloads.dataset.count=String(rounded);if(!document.documentElement.classList.contains('intro-pending'))downloads.textContent=rounded.toLocaleString('en-US');};
+      let cachedDownloads=null;
+      try{cachedDownloads=Number(sessionStorage.getItem('skazi-downloads'))||null;}catch(error){}
+      if(cachedDownloads)show(cachedDownloads);
+      else fetch('https://api.github.com/repos/slazoasher/skazi-bundle/releases?per_page=100',{headers:{Accept:'application/vnd.github+json'}})
+        .then(response=>response.ok?response.json():Promise.reject(new Error(response.status)))
+        .then(releases=>{
+          const total=releases.reduce((sum,release)=>sum+(release.assets||[]).reduce((s,asset)=>s+(asset.download_count||0),0),0);
+          if(total>0){try{sessionStorage.setItem('skazi-downloads',String(total));}catch(error){}show(total);}
+        })
+        .catch(()=>{});
+    }
+
     // The sticky download control appears once the hero buttons have scrolled away.
     const placeCta=()=>{document.body.classList.toggle('cta-away',ctas.getBoundingClientRect().bottom<0);};
     placeCta();
