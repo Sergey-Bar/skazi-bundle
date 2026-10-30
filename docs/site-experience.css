@@ -687,3 +687,7 @@ body::after{background:radial-gradient(ellipse 80% 42% at 50% -18%,rgba(229,9,20
 .daw-icons li:hover .daw-icon,.daw-icons li:focus-visible .daw-icon{opacity:1;transform:scale(1.06)}
 .daw-icons li::after{background:#1a1a1a;border-color:rgba(255,255,255,.14);font-size:11px}
 @media(max-width:600px){.daw-icons li{width:40px;height:40px;flex-basis:40px}.daw-icons{gap:8px}}
+/* Category label as a red typographic eyebrow above the plugin name, not a boxed chip. */
+#plugins .film-gallery[data-view="grid"] .body .badge,.plugin-dialog-kicker{display:block;margin:0 0 6px;padding:0;border:0;border-radius:0;background:none;color:var(--acid);font:600 10px/1.4 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;backdrop-filter:none;-webkit-backdrop-filter:none;opacity:1}
+.plugin-dialog-kicker{margin-bottom:8px;font-size:11px}
+#plugins .film-gallery[data-view="grid"] h3{margin-top:0}
