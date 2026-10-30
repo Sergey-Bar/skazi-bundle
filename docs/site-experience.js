@@ -122,11 +122,10 @@
     options.forEach(option=>option.addEventListener('click',()=>{closeChooser(false);showToast(option.dataset.dl);}));
 
     // The sticky download control appears once the hero buttons have scrolled away.
-    if('IntersectionObserver' in window){
-      new IntersectionObserver(([entry])=>{
-        document.body.classList.toggle('cta-away',!entry.isIntersecting&&entry.boundingClientRect.top<0);
-      },{threshold:0}).observe(ctas);
-    }
+    const placeCta=()=>{document.body.classList.toggle('cta-away',ctas.getBoundingClientRect().bottom<0);};
+    placeCta();
+    addEventListener('scroll',placeCta,{passive:true});
+    addEventListener('pageshow',placeCta);
     return os;
   };
 
@@ -203,7 +202,9 @@
       setTimeout(()=>{figure.textContent=format(target);},duration+120);
     });
     const html=document.documentElement;
-    if(document.visibilityState!=='visible'){
+    let seen=false;
+    try{seen=!!sessionStorage.getItem('skazi-counted');sessionStorage.setItem('skazi-counted','1');}catch(error){}
+    if(seen||document.visibilityState!=='visible'){
       figures.forEach(figure=>{figure.textContent=format(Number(figure.dataset.count));});
       return;
     }

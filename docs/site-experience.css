@@ -767,3 +767,5 @@ html,body,#site-intro{background:var(--bg)}
 .film-info-section .chip.hot{background:var(--acid);border-color:var(--acid);color:#fff}
 .film-navigation button{border-radius:50%;border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.04)}
 .film-navigation button:hover{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:#fff}
+/* No fade-in on the cards: the gallery is there on first paint, also on a scrolled refresh. */
+#plugins .card,#plugins .card:nth-child(2n){animation:none!important}

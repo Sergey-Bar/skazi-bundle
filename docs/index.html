@@ -260,7 +260,7 @@
   .visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 </style>
 <link rel="stylesheet" href="film-gallery.css?v=20261030">
-<link rel="stylesheet" href="site-experience.css?v=20261030s">
+<link rel="stylesheet" href="site-experience.css?v=20261030t">
 <script>
   // The opening sequence plays once per browser session; later loads go straight to the page.
   (() => {
@@ -371,7 +371,7 @@
       <div class="gallery-view" role="group" aria-label="Gallery layout"><button type="button" data-gallery-view="grid" aria-pressed="true">GRID</button><button type="button" data-gallery-view="reel" aria-pressed="false">REEL</button></div>
 
     </div>
-    <div class="film-gallery" aria-label="SKAZI plugin collection">
+    <div class="film-gallery" data-view="grid" aria-label="SKAZI plugin collection">
     <div class="film-viewport">
     <div class="grid" id="plugin-reel">
 
@@ -544,7 +544,7 @@
 
 
 <script src="film-gallery.js?v=20261030b"></script>
-<script src="site-experience.js?v=20261030c"></script>
+<script src="site-experience.js?v=20261030d"></script>
 <script>
   // Windows / Mac install tabs
   document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
