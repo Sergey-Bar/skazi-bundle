@@ -691,3 +691,5 @@ html,body,#site-intro{background:var(--bg)}
 .hero-wave-arrow svg{animation:none}
 /* WORKS WITH carries the same 28x2 red rule as the artist names. */
 .daw-label::after{width:28px;height:2px;border-radius:1px;background:var(--acid);opacity:1}
+/* Card descriptions stop at three lines; the full text lives in the plugin dialog. */
+#plugins .film-gallery[data-view="grid"] .body>p{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden;min-height:calc(3 * 1.7em)}
