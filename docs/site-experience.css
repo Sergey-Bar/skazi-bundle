@@ -769,3 +769,8 @@ html,body,#site-intro{background:var(--bg)}
 .film-navigation button:hover{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:#fff}
 /* No fade-in on the cards: the gallery is there on first paint, also on a scrolled refresh. */
 #plugins .card,#plugins .card:nth-child(2n){animation:none!important}
+/* Back-to-top matches the scroll-down cue: 48px red circle, bold red arrow, fills red on hover. */
+.back-top{width:48px;height:48px;border:2px solid var(--acid);border-radius:50%;background:rgba(6,6,8,.9);color:var(--acid);box-shadow:none;transition:opacity .22s,visibility .22s,transform .22s,background .18s,color .18s}
+.back-top svg{width:22px;height:22px;stroke-width:2.6}
+.back-top:hover,.back-top:focus-visible{background:var(--acid);border-color:var(--acid);color:#fff;transform:translateY(-3px)}
+.back-top.visible:hover{transform:translateY(-3px)}
