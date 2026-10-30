@@ -78,10 +78,13 @@ void Knob::paint (juce::Graphics& g)
     const float skirt = radius * 0.7f;
     const auto skirtBox = juce::Rectangle<float> (skirt * 2.0f, skirt * 2.0f).withCentre (centre);
     {
-        juce::Path body;
-        body.addEllipse (skirtBox);
-        juce::DropShadow (juce::Colours::black.withAlpha (0.8f), juce::roundToInt (skirt * 0.4f),
-                          { juce::roundToInt (skirt * 0.1f), juce::roundToInt (skirt * 0.24f) }).drawForPath (g, body);
+        // Soft cast shadow as a radial gradient: looks like a blur, costs a single fill.
+        const auto shadowCentre = centre.translated (skirt * 0.1f, skirt * 0.24f);
+        juce::ColourGradient shadow (juce::Colours::black.withAlpha (0.75f), shadowCentre, juce::Colours::transparentBlack,
+                                     shadowCentre.translated (skirt * 1.4f, 0.0f), true);
+        shadow.addColour (0.62, juce::Colours::black.withAlpha (0.55f));
+        g.setGradientFill (shadow);
+        g.fillEllipse (juce::Rectangle<float> (skirt * 2.8f, skirt * 2.8f).withCentre (shadowCentre));
     }
 
     g.setGradientFill (juce::ColourGradient (juce::Colour (0xff2e3034), skirtBox.getX(), skirtBox.getY(), juce::Colour (0xff0a0b0c), skirtBox.getX(), skirtBox.getBottom(), false));

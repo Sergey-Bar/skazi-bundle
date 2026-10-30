@@ -27,11 +27,13 @@ private:
     void attach (NeonKnob&, const char* paramID, std::atomic<float>& liveValue);
     void layout();
     void renderBackground();
+    juce::Image renderLattice() const;
 
     LowpassAudioProcessor& proc;
     NeonLookAndFeel lookAndFeel;
     Canvas canvas;
     float renderedScale = 0.0f;
+    juce::Image lattice;   // drawn once per window, only scaled on resize
 
     HeaderView header;
     FilterDisplay display;

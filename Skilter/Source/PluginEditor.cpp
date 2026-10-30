@@ -236,18 +236,12 @@ void LowpassAudioProcessorEditor::layout()
     row (macroArea, { &macroCutoff, &macroRes, &macroDrive, &macroMix, &macroMorph }, 72);
 }
 
-void LowpassAudioProcessorEditor::renderBackground()
+juce::Image LowpassAudioProcessorEditor::renderLattice() const
 {
-    const float scale = juce::Component::getApproximateScaleFactorForComponent (&canvas);
-    auto& image = canvas.background;
-    image = juce::Image (juce::Image::ARGB, juce::roundToInt ((float) designWidth * scale), juce::roundToInt ((float) designHeight * scale), true);
+    // A software image at the design size: cheap to draw scaled, nothing for the graphics driver to free later.
+    juce::Image image (juce::Image::ARGB, designWidth, designHeight, true, juce::SoftwareImageType());
     juce::Graphics g (image);
-    g.addTransform (juce::AffineTransform::scale (scale));
-
     const auto bounds = juce::Rectangle<float> (0.0f, 0.0f, (float) designWidth, (float) designHeight);
-    g.fillAll (Theme::background);
-
-    // Faint hex lattice and a radial glow behind the analyzer.
     g.setColour (Theme::cyan.withAlpha (0.035f));
     const float hx = 22.0f, hy = 19.0f;
     for (int r = 0; (float) r * hy < bounds.getHeight() + hy; ++r)
@@ -267,6 +261,24 @@ void LowpassAudioProcessorEditor::renderBackground()
             hex.closeSubPath();
             g.strokePath (hex, juce::PathStrokeType (0.6f));
         }
+    return image;
+}
+
+void LowpassAudioProcessorEditor::renderBackground()
+{
+    const float scale = juce::Component::getApproximateScaleFactorForComponent (&canvas);
+    auto& image = canvas.background;
+    image = juce::Image (juce::Image::ARGB, juce::roundToInt ((float) designWidth * scale), juce::roundToInt ((float) designHeight * scale), true);
+    juce::Graphics g (image);
+    g.addTransform (juce::AffineTransform::scale (scale));
+
+    const auto bounds = juce::Rectangle<float> (0.0f, 0.0f, (float) designWidth, (float) designHeight);
+    g.fillAll (Theme::background);
+
+    // Faint hex lattice (thousands of paths, so it's drawn once and then only scaled) and a radial glow behind the analyzer.
+    if (! lattice.isValid())
+        lattice = renderLattice();
+    g.drawImage (lattice, bounds);
 
     g.setGradientFill (juce::ColourGradient (Theme::cyan.withAlpha (0.07f), 450.0f, 220.0f, Theme::cyan.withAlpha (0.0f), 450.0f, 760.0f, true));
     g.fillRect (bounds);

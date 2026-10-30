@@ -138,7 +138,12 @@ void SkverbAudioProcessorEditor::timerCallback()
 
     space.tick (in, wetLevel);
     meters.tick (in, wetLevel, out);
-    preDelay.repaint();
+    // SYNC follows the host tempo, so the note readout can change by itself; repaint only when it does.
+    if (const auto text = preDelay.getTextFromValue (preDelay.getValue()); text != shownPreDelay)
+    {
+        shownPreDelay = text;
+        preDelay.repaint();
+    }
 
     for (auto* b : { &prevPreset, &nextPreset, &randomButton })
         if (b->flash > 0.0f)
@@ -232,6 +237,44 @@ void SkverbAudioProcessorEditor::layout()
     meters.setBounds (meterWindow);
 }
 
+juce::Image SkverbAudioProcessorEditor::renderFaceTexture() const
+{
+    // A plain software image: fast to write pixel by pixel, and nothing for the graphics driver to free later.
+    juce::Image texture (juce::Image::RGB, designWidth, designHeight, false, juce::SoftwareImageType());
+    {
+        juce::Graphics g (texture);
+        g.setGradientFill (juce::ColourGradient (Theme::plateTop, 0.0f, 0.0f, Theme::plateBottom, 0.0f, (float) designHeight, false));
+        g.fillAll();
+        juce::Random brush (2024);
+        for (float y = 0.0f; y < (float) designHeight; y += 1.0f)
+        {
+            float x = 0.0f;
+            while (x < (float) designWidth)
+            {
+                const float len = 40.0f + brush.nextFloat() * 260.0f;
+                g.setColour ((brush.nextBool() ? juce::Colours::white : juce::Colours::black).withAlpha (0.012f + brush.nextFloat() * 0.018f));
+                g.fillRect (x, y, len, 1.0f);
+                x += len + brush.nextFloat() * 30.0f;
+            }
+        }
+    }
+
+    // Fine powder-coat grain: nudge each pixel's brightness a little.
+    juce::Image::BitmapData pixels (texture, juce::Image::BitmapData::readWrite);
+    juce::Random noise (77);
+    for (int y = 0; y < designHeight; ++y)
+    {
+        auto* p = pixels.getLinePointer (y);
+        for (int x = 0; x < designWidth; ++x, p += pixels.pixelStride)
+        {
+            const int delta = (int) ((noise.nextFloat() - 0.5f) * 9.0f);
+            for (int c = 0; c < 3; ++c)
+                p[c] = (juce::uint8) juce::jlimit (0, 255, (int) p[c] + delta);
+        }
+    }
+    return texture;
+}
+
 void SkverbAudioProcessorEditor::renderBackground()
 {
     const float scale = juce::Component::getApproximateScaleFactorForComponent (&canvas);
@@ -243,34 +286,11 @@ void SkverbAudioProcessorEditor::renderBackground()
     const auto bounds = juce::Rectangle<float> (0.0f, 0.0f, (float) designWidth, (float) designHeight);
     const float earWidth = 34.0f;
 
-    // Anodised faceplate with a fine horizontal brush.
-    g.setGradientFill (juce::ColourGradient (Theme::plateTop, 0.0f, 0.0f, Theme::plateBottom, 0.0f, bounds.getBottom(), false));
-    g.fillRect (bounds);
-    juce::Random brush (2024);
-    for (float y = 0.0f; y < bounds.getBottom(); y += 1.0f)
-    {
-        float x = 0.0f;
-        while (x < bounds.getRight())
-        {
-            const float len = 40.0f + brush.nextFloat() * 260.0f;
-            g.setColour ((brush.nextBool() ? juce::Colours::white : juce::Colours::black).withAlpha (0.012f + brush.nextFloat() * 0.018f));
-            g.fillRect (x, y, len, 1.0f);
-            x += len + brush.nextFloat() * 30.0f;
-        }
-    }
-    // Fine powder-coat grain, then light falling from above.
-    {
-        juce::Image grain (juce::Image::ARGB, designWidth, designHeight, true);
-        juce::Image::BitmapData pixels (grain, juce::Image::BitmapData::writeOnly);
-        juce::Random noise (77);
-        for (int y = 0; y < designHeight; ++y)
-            for (int x = 0; x < designWidth; ++x)
-            {
-                const float n = noise.nextFloat();
-                pixels.setPixelColour (x, y, (n > 0.5f ? juce::Colours::white : juce::Colours::black).withAlpha (std::abs (n - 0.5f) * 0.07f));
-            }
-        g.drawImageAt (grain, 0, 0);
-    }
+    // Anodised faceplate: the brush and grain are rendered once per window and only scaled on resize.
+    if (! faceTexture.isValid())
+        faceTexture = renderFaceTexture();
+    g.drawImage (faceTexture, bounds);
+    // Light falling from above.
     g.setGradientFill (juce::ColourGradient (juce::Colours::white.withAlpha (0.06f), 0.0f, 0.0f, juce::Colours::transparentWhite, 0.0f, 260.0f, false));
     g.fillRect (bounds);
     g.setGradientFill (juce::ColourGradient (juce::Colours::black.withAlpha (0.25f), 0.0f, bounds.getBottom(), juce::Colours::transparentBlack, 0.0f, bounds.getBottom() - 160.0f, false));

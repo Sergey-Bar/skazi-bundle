@@ -204,7 +204,7 @@ namespace Theme
     // Brushed, machined metal disc: a conic sheen whose highlights stay put while the knob turns.
     inline void machinedDisc (juce::Graphics& g, juce::Point<float> c, float radius, juce::Colour dark, juce::Colour light)
     {
-        const int wedges = juce::jlimit (48, 144, (int) (radius * 4.0f));
+        const int wedges = juce::jlimit (36, 90, (int) (radius * 2.5f));
         const float step = juce::MathConstants<float>::twoPi / (float) wedges;
         for (int i = 0; i < wedges; ++i)
         {

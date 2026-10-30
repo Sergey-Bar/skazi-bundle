@@ -27,12 +27,15 @@ private:
     void attach (LedToggle&, const char* paramID);
     void layout();
     void renderBackground();
+    juce::Image renderFaceTexture() const;
     void stepPreset (int delta);
 
     SkverbAudioProcessor& proc;
     PanelLookAndFeel lookAndFeel;
     Canvas canvas;
     float renderedScale = 0.0f;
+    juce::Image faceTexture;
+    juce::String shownPreDelay;
 
     HeaderView header;
     SpaceView space;
