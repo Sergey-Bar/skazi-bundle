@@ -137,6 +137,7 @@ int main()
     auto tapeBase = base;
     tapeBase.mode = Stereo; tapeBase.reverbMix = 0; tapeBase.duck = 0; tapeBase.dry = false; tapeBase.wow = 0;
     tapeBase.delayMix = 1.0f; tapeBase.feedback = 0.7f; tapeBase.loCut = 20; tapeBase.hiCut = 20000;
+    tapeBase.width = 0.5f; // the echoes as recorded: these tests read the left side on its own
     const auto burst = [] (int i) { return i < 4800 ? 0.5f * (float) std::sin (juce::MathConstants<double>::twoPi * 440.0 * i / sr) : 0.0f; };
     auto freqAt = [] (const std::vector<float>& v, int from, int to)
     {
