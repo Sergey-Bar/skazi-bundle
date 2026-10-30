@@ -52,7 +52,7 @@ Every plugin uses the vendor name **SKAZI**, so DAWs list them together.
 
 1. Put the plugin folder here with bundle-style CMake (JUCE 8.0.4, vendor **SKAZI**, AU on Mac).
 2. Add it to `build_bundle.ps1`, `mac/build_mac.sh`, `mac/welcome.html`, `mac/Uninstall SKAZI Bundle.command`, `BundleInstaller/SetupMain.cpp` and a row at the end of the table above.
-3. On the download page (`docs/index.html`), add its card **at the bottom of the list** (the newest plugin is always last; BULLY stays first) and update the plugin and preset counts.
+3. On the download page (`docs/index.html`), add its card **at the top of the list** (the newest plugin shows first) and update the plugin and preset counts.
 4. Push to `main`. CI builds both installers and publishes them as the next release (v1.3, v1.4, …). The page's download buttons link to `releases/latest`, so they serve the new installer as soon as the release is up.
 
 ---

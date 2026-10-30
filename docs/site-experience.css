@@ -863,3 +863,7 @@ html,body,#site-intro{background:var(--bg)}
 .plugin-dialog .lb-close{min-height:40px}
 @media(max-height:820px){.plugin-dialog-body{padding-top:52px}.plugin-dialog-section p{font-size:12.5px;line-height:1.55}.plugin-dialog-body h3{font-size:26px}}
 @media(max-width:900px){.plugin-dialog-panel{grid-template-columns:1fr;height:auto;max-height:calc(100vh - 40px);overflow:auto}.plugin-dialog-media{padding:56px 16px 16px}.plugin-dialog-media img{max-height:38vh}.plugin-dialog-body{justify-content:flex-start;padding:20px 20px 22px;overflow:visible}.plugin-dialog-specs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Dialog eyebrow matches the cards: red text, no bar. Spotlight retired. */
+.plugin-dialog-kicker,.plugin-dialog-kicker[class]{display:block;margin:0 0 6px;padding:0;border:0;border-radius:0;background:none;color:var(--acid);font:700 11px/1.4 Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.spotlight{display:none}
+.plugin-dialog-specs{margin-bottom:14px}

@@ -260,7 +260,7 @@
   .visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 </style>
 <link rel="stylesheet" href="film-gallery.css?v=20261030">
-<link rel="stylesheet" href="site-experience.css?v=20261031a">
+<link rel="stylesheet" href="site-experience.css?v=20261031b">
 <script>
   // The opening sequence plays once per browser session; later loads go straight to the page.
   (() => {
@@ -371,20 +371,15 @@
       <div class="gallery-view" role="group" aria-label="Gallery layout"><button type="button" data-gallery-view="grid" aria-pressed="true" aria-label="Grid view" title="Grid"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg></button><button type="button" data-gallery-view="reel" aria-pressed="false" aria-label="Reel view" title="Reel"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="12" height="14" rx="2"/><path d="M2.5 8v8M21.5 8v8"/></svg></button></div>
 
     </div>
-    <a class="spotlight" href="#plugins" data-spotlight="SKAZI REVERB">
-      <div class="spotlight-media"><img src="img/skverb-960.webp" srcset="img/skverb-480.webp 480w, img/skverb-960.webp 960w" sizes="(max-width:900px) 100vw, 60vw" width="1200" height="1066" alt="" loading="lazy"></div>
-      <div class="spotlight-body">
-        <p class="spotlight-eyebrow">New in 1.13 · Effect · 75 presets</p>
-        <h3>SKAZI <em>REVERB</em></h3>
-        <p class="spotlight-sub">Mega reverb machine</p>
-        <p class="spotlight-text">Ten algorithms from hall and plate to shimmer, reverse, gated and blackhole, with freeze, ducking and a resonant tail filter. The newest addition to the bundle.</p>
-        <span class="spotlight-cta">See what's new</span>
-      </div>
-    </a>
     <span class="visually-hidden" aria-live="polite" data-filter-status></span>
     <div class="film-gallery" data-view="grid" aria-label="SKAZI plugin collection">
     <div class="film-viewport">
     <div class="grid" id="plugin-reel">
+
+      <article class="card" data-folder="Skverb"><div class="pic"><img src="img/skverb-480.webp" srcset="img/skverb-480.webp 480w, img/skverb-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/skverb.png?v=1" width="1200" height="1066" alt="SKAZI REVERB" class="zoom" loading="lazy"><span class="card-open" aria-hidden="true" title="Open SKAZI REVERB"><svg viewBox="0 0 24 24"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/></svg></span></div>
+        <div class="body"><span class="badge fx">New · Effect<i>75 presets</i></span><h3>SKAZI <em>REVERB</em></h3><div class="sub">Mega reverb machine</div>
+          <p>A rack-style reverb in the spirit of the classic studio machines: ten algorithms from hall and plate to shimmer, reverse, gated and blackhole. Pre-delay with echo feedback and tempo sync, FREEZE for endless pads, DUCK so the tail breathes around your kick, and a resonant tail filter.</p>
+          <div class="chips"><span class="chip hot">75 presets</span><span class="chip">10 algorithms</span><span class="chip">Reverse layer</span><span class="chip">Resonant tail filter</span><span class="chip">Freeze + duck</span></div><p class="card-changelog" hidden>New in SKAZI Bundle 1.13: hall, plate, room, chamber, cathedral, spring, shimmer, reverse, gated and blackhole on an 8-line engine, echo feedback pre-delay with tempo sync, freeze, ducking, drive, shimmer pitch loop, reverse layer and a resonant tail filter with envelope sweep.</p></div></article>
 
       <article class="card" data-folder="Bully" data-preview="wide"><div class="pic"><img src="img/bully-480.webp" srcset="img/bully-480.webp 480w, img/bully-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/bully.png?v=3" width="1548" height="886" alt="BULLY" class="zoom" loading="lazy"><span class="card-open" aria-hidden="true" title="Open BULLY"><svg viewBox="0 0 24 24"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/></svg></span></div>
         <div class="body"><span class="badge inst">Instrument<i>462 presets</i></span><h3>BUL<em>LY</em></h3><div class="sub">Analog-character wavetable monster</div>
@@ -476,10 +471,6 @@
           <p>Push any sound up to 200% wide and it still sounds full in mono: every bit of width goes into the sides. An allpass spread engine opens up mono synths, the PHASE wheel and DRIFT move the image, DEPTH pulls it near or far, and MONO BASS keeps the low end tight.</p>
           <div class="chips"><span class="chip hot">70 presets</span><span class="chip">200% width, mono safe</span><span class="chip">Phase wheel + drift</span><span class="chip">Haas SUPER WIDE</span><span class="chip">Imager + scope</span></div><p class="card-changelog" hidden>New in SKAZI Bundle 1.11: phase-safe width up to 200%, allpass spread for mono sounds, phase wheel with drift, near/far depth, mono bass, Haas SUPER WIDE, frequency imager and a Lissajous scope with correlation readout.</p></div></article>
 
-      <article class="card" data-folder="Skverb"><div class="pic"><img src="img/skverb-480.webp" srcset="img/skverb-480.webp 480w, img/skverb-960.webp 960w" sizes="(max-width:540px) calc(100vw - 88px), (max-width:1000px) 45vw, 30vw" data-full="img/skverb.png?v=1" width="1200" height="1066" alt="SKAZI REVERB" class="zoom" loading="lazy"><span class="card-open" aria-hidden="true" title="Open SKAZI REVERB"><svg viewBox="0 0 24 24"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/></svg></span></div>
-        <div class="body"><span class="badge fx">New · Effect<i>75 presets</i></span><h3>SKAZI <em>REVERB</em></h3><div class="sub">Mega reverb machine</div>
-          <p>A rack-style reverb in the spirit of the classic studio machines: ten algorithms from hall and plate to shimmer, reverse, gated and blackhole. Pre-delay with echo feedback and tempo sync, FREEZE for endless pads, DUCK so the tail breathes around your kick, and a resonant tail filter.</p>
-          <div class="chips"><span class="chip hot">75 presets</span><span class="chip">10 algorithms</span><span class="chip">Reverse layer</span><span class="chip">Resonant tail filter</span><span class="chip">Freeze + duck</span></div><p class="card-changelog" hidden>New in SKAZI Bundle 1.13: hall, plate, room, chamber, cathedral, spring, shimmer, reverse, gated and blackhole on an 8-line engine, echo feedback pre-delay with tempo sync, freeze, ducking, drive, shimmer pitch loop, reverse layer and a resonant tail filter with envelope sweep.</p></div></article>
 
     </div>
   </div>
@@ -532,7 +523,6 @@
         <div><dt>Platforms</dt><dd>Windows 10/11 · macOS 10.13+</dd></div>
         <div data-dialog-added-row><dt>Added</dt><dd data-dialog-added></dd></div>
       </dl>
-      <p class="plugin-dialog-links"><a data-dialog-source href="https://github.com/slazoasher/skazi-bundle" rel="noopener">View source</a><a data-dialog-issue href="https://github.com/slazoasher/skazi-bundle/issues/new" rel="noopener">Report an issue</a></p>
       <section class="plugin-dialog-section" data-dialog-changelog-section><h4>What's new</h4><p data-dialog-changelog></p></section>
       <section class="plugin-dialog-section"><h4>Highlights</h4><p data-dialog-description></p><div class="chips" data-dialog-chips></div></section>
       <div class="plugin-dialog-actions"><button class="btn btn-red plugin-dialog-download" type="button" data-open-download><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m-5-4 5 5 5-5M5 20h14"/></svg><span>Free Download</span></button><span class="plugin-dialog-hint">Included in the bundle · Windows &amp; Mac</span></div>
@@ -624,9 +614,6 @@
     dialogField('presets').textContent = badge?.querySelector('i')?.textContent || '';
     const added = (card.querySelector('.card-changelog')?.textContent.match(/New in SKAZI Bundle ([\d.]+)/) || [])[1];
     dialogField('added').textContent = added ? `Bundle ${added}` : ''; lb.querySelector('[data-dialog-added-row]').hidden = !added;
-    const folder = card.dataset.folder || ''; const name = card.querySelector('h3').textContent.trim();
-    lb.querySelector('[data-dialog-source]').href = `https://github.com/slazoasher/skazi-bundle/tree/main/${folder}`;
-    lb.querySelector('[data-dialog-issue]').href = `https://github.com/slazoasher/skazi-bundle/issues/new?title=${encodeURIComponent('[' + name + '] ')}`;
     const visibleCards = [...document.querySelectorAll('.film-gallery .card')].filter(c => !c.hidden); const position = visibleCards.indexOf(card); lb.querySelector('.plugin-dialog-count').textContent = `${position + 1} / ${visibleCards.length}`; lb.dataset.index = position;
     dialogField('title').innerHTML = card.querySelector('h3').innerHTML;
     dialogField('sub').textContent = card.querySelector('.sub')?.textContent || '';
@@ -644,7 +631,6 @@
     image.tabIndex = 0; image.setAttribute('role','button'); image.setAttribute('aria-label',`${image.alt}: what's new and details`);
     image.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openPlugin(image.closest('.card'), image); } });
   });
-  document.querySelector('.spotlight')?.addEventListener('click', event => { event.preventDefault(); const name = event.currentTarget.dataset.spotlight; const card = [...document.querySelectorAll('.film-gallery .card')].find(c => c.querySelector('img.zoom').alt === name); if (card) openPlugin(card, event.currentTarget); });
   document.querySelectorAll('.card').forEach(card => card.addEventListener('click', event => {
     if (event.target.closest('a, details, summary')) return;
     openPlugin(card, event.target.closest('button') || card.querySelector('img.zoom'));
