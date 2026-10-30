@@ -9,7 +9,7 @@
     kicks. Nothing is copied or bundled: BAMBA plays the files where they are. One
     library is shared by every BAMBA instance; get it with
     juce::SharedResourcePointer<RiserLibrary>. */
-class RiserLibrary : private juce::Thread
+class RiserLibrary
 {
 public:
     enum Kind { Rise, Down, Sweep, Impact, Reverse, NumKinds };
@@ -29,16 +29,16 @@ public:
     };
 
     RiserLibrary();
-    ~RiserLibrary() override;
+    ~RiserLibrary();
 
     juce::File getFolder() const;
     /** Remembers the folder for next time and rescans it. */
     void setFolder (const juce::File&);
     void rescan();
 
-    bool isScanning() const { return isThreadRunning(); }
+    bool isScanning() const { return shared->scans.load() > 0; }
     /** Bumped after every scan, so the editor knows to refresh. */
-    int getVersion() const { return version.load(); }
+    int getVersion() const { return shared->version.load(); }
 
     /** Shortest first, so < and > walk from quick hits to long builds. */
     std::vector<Entry> getEntries() const;
@@ -49,14 +49,22 @@ public:
     static std::vector<Entry> scan (const juce::File& root, const std::function<bool()>& shouldStop = {});
 
 private:
-    void run() override;
+    // Scans run as detached jobs (Common/BackgroundJob.h): closing the plugin never waits for a slow
+    // folder or cloud drive. Results land in this shared block, which outlives the library if it must.
+    struct Shared
+    {
+        juce::CriticalSection lock;
+        std::vector<Entry> entries;
+        std::atomic<int> version { 0 }, scans { 0 };
+    };
+    struct Job { std::atomic<bool> cancelled { false }; };
     static juce::File defaultFolder();
     std::unique_ptr<juce::PropertiesFile> openSettings() const;
 
     mutable juce::CriticalSection lock;
     juce::File folder;
-    std::vector<Entry> entries;
-    std::atomic<int> version { 0 };
+    std::shared_ptr<Shared> shared = std::make_shared<Shared>();
+    std::shared_ptr<Job> job;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RiserLibrary)
 };

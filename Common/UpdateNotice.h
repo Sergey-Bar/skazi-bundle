@@ -4,53 +4,86 @@
 //
 //   return skazi::withUpdateNotice (new MyEditor (*this));   // in createEditor()
 //
-// Once a day (per machine, shared by all SKAZI plugins) a background thread asks GitHub for the
+// Once a day (per machine, shared by all SKAZI plugins) a detached background job asks GitHub for the
 // latest SKAZI Bundle release. If it was published after this plugin was built, a small banner
 // appears in the window's bottom-right corner; clicking it opens the download page, x hides it
 // for this release. No internet, a timeout or a GitHub hiccup: nothing shows, nothing waits.
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <atomic>
+#include <memory>
+#include "BackgroundJob.h"
 
 namespace skazi
 {
-class UpdateChecker : private juce::Thread
+class UpdateChecker
 {
 public:
-    UpdateChecker() : juce::Thread ("SKAZI update check") { startThread (juce::Thread::Priority::low); }
-    ~UpdateChecker() override { stopThread (8000); }
+    // The check runs as a detached job: closing a plugin window never waits for the network.
+    UpdateChecker() : state (std::make_shared<State>())
+    {
+        runDetached ([s = state] { check (*s); });
+    }
 
-    bool available() const { return newer.load(); }
-    juce::String releaseName() const { const juce::ScopedLock sl (lock); return name; }
+    bool available() const { return state->newer.load(); }
+    juce::String releaseName() const { const juce::ScopedLock sl (state->lock); return state->name; }
+
     void dismiss()
     {
-        auto f = cacheFile();
-        juce::PropertiesFile props (f, {});
-        props.setValue ("dismissed", releaseName());
-        props.saveIfNeeded();
-        newer = false;
+        juce::InterProcessLock fileLock (lockName());
+        auto props = openSettings (fileLock);
+        props->setValue ("dismissed", releaseName());
+        props->saveIfNeeded();
+        state->newer = false;
     }
 
     static juce::URL pageUrl() { return juce::URL ("https://slazoasher.github.io/skazi-bundle/"); }
 
 private:
-    static juce::File cacheFile()
+    struct State
     {
-        return juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory)
-                   .getChildFile ("SKAZI").getChildFile ("update-check.settings");
-    }
+        std::atomic<bool> newer { false };
+        juce::CriticalSection lock;
+        juce::String name;
+    };
 
-    void run() override
+    static juce::String lockName() { return "SKAZI-update-check"; }
+
+    // Every SKAZI plugin (each its own DLL, maybe in other processes too) shares this file,
+    // so reads and writes go through a system-wide lock and are saved explicitly, with no timer.
+    static std::unique_ptr<juce::PropertiesFile> openSettings (juce::InterProcessLock& fileLock)
     {
-        const auto file = cacheFile();
+        const auto file = juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory)
+                              .getChildFile ("SKAZI").getChildFile ("update-check.settings");
         file.getParentDirectory().createDirectory();
         juce::PropertiesFile::Options opts;
-        juce::PropertiesFile props (file, opts);
+        opts.millisecondsBeforeSaving = -1;
+        opts.processLock = &fileLock;
+        return std::make_unique<juce::PropertiesFile> (file, opts);
+    }
 
+    static void check (State& state)
+    {
+        juce::InterProcessLock fileLock (lockName());
         const auto now = juce::Time::getCurrentTime();
-        const auto lastCheck = juce::Time (props.getValue ("checked").getLargeIntValue());
-        juce::String published = props.getValue ("published"), tag = props.getValue ("tag");
+        juce::String published, tag, dismissed;
+        bool ask = false;
+        {
+            auto props = openSettings (fileLock);
+            published = props->getValue ("published");
+            tag = props->getValue ("tag");
+            dismissed = props->getValue ("dismissed");
+            const auto lastTry = juce::Time (props->getValue ("checked").getLargeIntValue());
+            // Once a day; after a failed try (offline, firewall, GitHub busy) wait 6 hours, not every window open
+            ask = now - lastTry > juce::RelativeTime::hours (published.isEmpty() ? 6 : 24);
+            if (ask)
+            {
+                // Claim this check first, so the other SKAZI plugins opening right now don't all ask too
+                props->setValue ("checked", juce::String (now.toMilliseconds()));
+                props->saveIfNeeded();
+            }
+        }
 
-        if (now - lastCheck > juce::RelativeTime::hours (24) || published.isEmpty())
+        if (ask)
         {
             auto options = juce::URL::InputStreamOptions (juce::URL::ParameterHandling::inAddress)
                                .withConnectionTimeoutMs (6000)
@@ -62,30 +95,29 @@ private:
                 {
                     published = json["published_at"].toString();
                     tag = json["tag_name"].toString();
-                    props.setValue ("published", published);
-                    props.setValue ("tag", tag);
-                    props.setValue ("checked", juce::String (now.toMilliseconds()));
-                    props.saveIfNeeded();
+                    auto props = openSettings (fileLock);
+                    props->setValue ("published", published);
+                    props->setValue ("tag", tag);
+                    props->saveIfNeeded();
                 }
             }
         }
-        if (threadShouldExit() || published.isEmpty())
+
+        if (published.isEmpty())
             return;
 
         // CI builds every plugin minutes before it publishes the release, so a release more than
         // several hours newer than this build is one this user doesn't have yet
         const auto releaseTime = juce::Time::fromISO8601 (published);
         const auto builtTime = juce::Time::getCompilationDate();
-        if (releaseTime - builtTime > juce::RelativeTime::hours (6) && props.getValue ("dismissed") != tag)
+        if (releaseTime - builtTime > juce::RelativeTime::hours (6) && dismissed != tag)
         {
-            { const juce::ScopedLock sl (lock); name = tag; }
-            newer = true;
+            { const juce::ScopedLock sl (state.lock); state.name = tag; }
+            state.newer = true;
         }
     }
 
-    std::atomic<bool> newer { false };
-    juce::CriticalSection lock;
-    juce::String name;
+    std::shared_ptr<State> state;
 };
 
 class UpdateBanner : public juce::Component, private juce::ComponentListener, private juce::Timer

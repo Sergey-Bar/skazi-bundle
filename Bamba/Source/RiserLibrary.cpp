@@ -1,4 +1,5 @@
 #include "RiserLibrary.h"
+#include "../../Common/BackgroundJob.h"
 
 const char* RiserLibrary::kindName (int kind)
 {
@@ -15,7 +16,7 @@ bool RiserLibrary::Entry::matches (int kindFilter, int lengthFilter) const
     return true;
 }
 
-RiserLibrary::RiserLibrary() : juce::Thread ("BAMBA riser scan")
+RiserLibrary::RiserLibrary()
 {
     juce::File saved;
     if (auto settings = openSettings())
@@ -26,7 +27,8 @@ RiserLibrary::RiserLibrary() : juce::Thread ("BAMBA riser scan")
 
 RiserLibrary::~RiserLibrary()
 {
-    stopThread (4000);
+    if (job != nullptr)
+        job->cancelled = true; // the job notices and stops; nothing here waits for it
 }
 
 std::unique_ptr<juce::PropertiesFile> RiserLibrary::openSettings() const
@@ -71,14 +73,27 @@ void RiserLibrary::setFolder (const juce::File& newFolder)
 
 void RiserLibrary::rescan()
 {
-    stopThread (4000);
-    startThread (juce::Thread::Priority::low);
+    if (job != nullptr)
+        job->cancelled = true;
+    job = std::make_shared<Job>();
+    ++shared->scans;
+    skazi::runDetached ([s = shared, j = job, root = getFolder()]
+    {
+        auto found = scan (root, [&j] { return j->cancelled.load(); });
+        if (! j->cancelled)
+        {
+            const juce::ScopedLock sl (s->lock);
+            s->entries = std::move (found);
+            ++s->version;
+        }
+        --s->scans;
+    });
 }
 
 std::vector<RiserLibrary::Entry> RiserLibrary::getEntries() const
 {
-    const juce::ScopedLock sl (lock);
-    return entries;
+    const juce::ScopedLock sl (shared->lock);
+    return shared->entries;
 }
 
 int RiserLibrary::classify (const juce::File& f)
@@ -183,16 +198,4 @@ std::vector<RiserLibrary::Entry> RiserLibrary::scan (const juce::File& root, con
         return a.seconds != b.seconds ? a.seconds < b.seconds : a.file.getFileName().compareNatural (b.file.getFileName()) < 0;
     });
     return found;
-}
-
-void RiserLibrary::run()
-{
-    auto found = scan (getFolder(), [this] { return threadShouldExit(); });
-    if (threadShouldExit())
-        return;
-    {
-        const juce::ScopedLock sl (lock);
-        entries = std::move (found);
-    }
-    ++version;
 }

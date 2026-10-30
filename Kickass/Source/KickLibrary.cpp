@@ -1,6 +1,7 @@
 #include "KickLibrary.h"
+#include "../../Common/BackgroundJob.h"
 
-KickLibrary::KickLibrary() : juce::Thread ("KICKASS kick scan")
+KickLibrary::KickLibrary()
 {
     juce::File saved;
     if (auto settings = openSettings())
@@ -11,7 +12,8 @@ KickLibrary::KickLibrary() : juce::Thread ("KICKASS kick scan")
 
 KickLibrary::~KickLibrary()
 {
-    stopThread (4000);
+    if (job != nullptr)
+        job->cancelled = true; // the job notices and stops; nothing here waits for it
 }
 
 std::unique_ptr<juce::PropertiesFile> KickLibrary::openSettings() const
@@ -56,19 +58,33 @@ void KickLibrary::setFolder (const juce::File& newFolder)
 
 void KickLibrary::rescan()
 {
-    stopThread (4000);
-    startThread (juce::Thread::Priority::low);
+    if (job != nullptr)
+        job->cancelled = true;
+    job = std::make_shared<Job>();
+    ++shared->scans;
+    skazi::runDetached ([s = shared, j = job, root = getFolder()]
+    {
+        auto found = scanKicks (root, [&j] { return j->cancelled.load(); });
+        if (! j->cancelled)
+        {
+            const juce::ScopedLock sl (s->lock);
+            s->entries = std::move (found);
+            ++s->version;
+        }
+        --s->scans;
+    });
 }
 
 std::vector<KickLibrary::Entry> KickLibrary::getEntries() const
 {
-    const juce::ScopedLock sl (lock);
-    return entries;
+    const juce::ScopedLock sl (shared->lock);
+    return shared->entries;
 }
 
 int KickLibrary::indexOf (const juce::File& f) const
 {
-    const juce::ScopedLock sl (lock);
+    const juce::ScopedLock sl (shared->lock);
+    const auto& entries = shared->entries;
     for (size_t i = 0; i < entries.size(); ++i)
         if (entries[i].file == f)
             return (int) i;
@@ -91,15 +107,14 @@ bool KickLibrary::looksLikeKickOneShot (const juce::File& f)
     return kick && ! loop && f.getSize() < 1500000; // ~8 s of 24-bit stereo; one-shots are far shorter
 }
 
-void KickLibrary::run()
+std::vector<KickLibrary::Entry> KickLibrary::scanKicks (const juce::File& root, const std::function<bool()>& shouldStop)
 {
-    const auto root = getFolder();
     std::vector<Entry> found;
 
     for (const auto& item : juce::RangedDirectoryIterator (root, true, "*.wav;*.aif;*.aiff;*.flac"))
     {
-        if (threadShouldExit())
-            return;
+        if (shouldStop())
+            return found;
 
         const auto& f = item.getFile();
         if (! looksLikeKickOneShot (f))
@@ -120,9 +135,5 @@ void KickLibrary::run()
         return byPack != 0 ? byPack < 0 : a.file.getFileName().compareNatural (b.file.getFileName()) < 0;
     });
 
-    {
-        const juce::ScopedLock sl (lock);
-        entries = std::move (found);
-    }
-    ++version;
+    return found;
 }
