@@ -260,7 +260,7 @@
   .visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 </style>
 <link rel="stylesheet" href="film-gallery.css?v=20261030">
-<link rel="stylesheet" href="site-experience.css?v=20261030r">
+<link rel="stylesheet" href="site-experience.css?v=20261030s">
 <script>
   // The opening sequence plays once per browser session; later loads go straight to the page.
   (() => {
@@ -475,13 +475,16 @@
     <div class="film-meta" hidden>
       <div class="film-caption">
         <span class="film-count" aria-hidden="true">01 <span>/ 19</span></span>
-        <div class="film-label"><h3 class="film-title">BULLY</h3><p class="film-subtitle">Analog-character wavetable monster</p></div>
+        <div class="film-label"><p class="film-eyebrow"><span class="film-kicker">Instrument</span><span class="film-presets">462 presets</span></p><h3 class="film-title">BULLY</h3><p class="film-subtitle">Analog-character wavetable monster</p></div>
         <div class="film-navigation">
           <button class="film-prev" type="button" aria-label="Previous plugin" aria-controls="plugin-reel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
           <button class="film-next" type="button" aria-label="Next plugin" aria-controls="plugin-reel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button>
         </div>
       </div>
-      <details class="film-details"><summary>Plugin details</summary><div class="film-description"></div></details>
+      <div class="film-info">
+        <section class="film-info-section" data-film-changelog-section><h4>What's new</h4><p data-film-changelog></p></section>
+        <section class="film-info-section"><h4>Highlights</h4><p data-film-description></p><div class="chips" data-film-chips></div></section>
+      </div>
 
       <span class="visually-hidden film-announcement" aria-live="polite" aria-atomic="true"></span>
     </div>
@@ -540,7 +543,7 @@
 </div>
 
 
-<script src="film-gallery.js?v=20261030"></script>
+<script src="film-gallery.js?v=20261030b"></script>
 <script src="site-experience.js?v=20261030c"></script>
 <script>
   // Windows / Mac install tabs
@@ -588,7 +591,7 @@
       count.textContent = `${shown} ${label}`;
     };
     buttons.forEach(b => b.addEventListener('click', () => apply(b.dataset.filter)));
-    document.querySelectorAll('[data-gallery-view="reel"]').forEach(b => b.addEventListener('click', () => apply('all')));
+    buttons.forEach(b => b.addEventListener('click', () => document.querySelector('.film-gallery').refresh?.()));
   })();
   // Clicking a plugin opens its details: large screenshot, what's new and highlights. Keyboard, close control and focus restoration included.
   const lb = document.getElementById("lb"), lbImg = lb.querySelector("img"), lbClose = lb.querySelector('.lb-close');

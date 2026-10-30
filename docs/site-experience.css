@@ -747,3 +747,23 @@ html,body,#site-intro{background:var(--bg)}
 @media(max-width:900px){.plugin-dialog-nav{right:auto;left:16px}}
 @media(max-width:700px){#plugins.film-enhanced .head{grid-template-columns:1fr}.gallery-view{grid-column:1;grid-row:3;justify-self:start}.gallery-filter{grid-column:1;grid-row:4}.gallery-filter button{min-height:38px;padding:0 13px;font-size:12px}}
 @media(prefers-reduced-motion:reduce){.lb.on,.lb.on .plugin-dialog-panel{animation:none}}
+/* Reel: filtered cards only, and the plugin information open beneath the reel like the dialog. */
+#plugins .film-gallery[data-ready="true"][data-view="reel"] .card[hidden]{display:none}
+.film-meta{width:min(760px,100% - 32px)}
+.film-caption{align-items:flex-start;gap:20px}
+.film-count{padding-top:6px}
+.film-eyebrow{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 6px;color:var(--acid);font:700 11px/1.4 Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.film-presets{color:#f2f2f2;letter-spacing:.04em;text-transform:none;font-weight:600}
+.film-title{font-family:"Space Grotesk",Inter,sans-serif;font-size:30px;font-weight:600;letter-spacing:-.04em;line-height:1.1}
+.film-title em{font-style:normal;color:var(--acid)}
+.film-subtitle{color:#ededed;font-size:14px;margin-top:4px}
+.film-info{margin:18px auto 0;padding:0 0 6px}
+.film-info-section{padding:18px 0;border-top:1px solid #262626}
+.film-info-section[hidden]{display:none}
+.film-info-section h4{margin:0 0 8px;font:600 11px/1.4 Inter,sans-serif;letter-spacing:.09em;text-transform:uppercase;color:#8d8d8d}
+.film-info-section p{margin:0;color:#c6c6c6;font-size:14px;line-height:1.75}
+.film-info-section .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.film-info-section .chip{font:500 12px/1.5 Inter,sans-serif;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#d0d0d0}
+.film-info-section .chip.hot{background:var(--acid);border-color:var(--acid);color:#fff}
+.film-navigation button{border-radius:50%;border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.04)}
+.film-navigation button:hover{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:#fff}

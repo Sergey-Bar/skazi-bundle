@@ -7,10 +7,11 @@
     if (!root || root.dataset.ready === 'true') return;
     const viewport = root.querySelector('.film-viewport');
     const track = root.querySelector('#plugin-reel');
-    const cards = [...track.querySelectorAll('.card')];
-    if (!cards.length) return;
-    const gridSizes = cards.map(card => card.querySelector('img').sizes);
-    const pictures = cards.map(card => card.querySelector('.pic'));
+    const allCards = [...track.querySelectorAll('.card')];
+    if (!allCards.length) return;
+    const gridSizes = allCards.map(card => card.querySelector('img').sizes);
+    // The reel runs on the cards the filter leaves visible; these are rebound by refresh().
+    let cards = allCards, pictures = [], names = [], tilts = [], total = 0;
     const meta = root.querySelector('.film-meta');
     const count = root.querySelector('.film-count');
     const title = root.querySelector('.film-title');
@@ -18,9 +19,22 @@
     const description = root.querySelector('.film-description');
     const announcement = root.querySelector('.film-announcement');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-    const names = cards.map(card => card.querySelector('h3').textContent.trim());
-    const tilts = cards.map(() => 0);
-    const total = cards.length;
+    const kicker = root.querySelector('.film-kicker');
+    const presets = root.querySelector('.film-presets');
+    const changelogField = root.querySelector('[data-film-changelog]');
+    const changelogSection = root.querySelector('[data-film-changelog-section]');
+    const descriptionField = root.querySelector('[data-film-description]');
+    const chipsField = root.querySelector('[data-film-chips]');
+    function bind() {
+      cards = allCards.filter(card => !card.hidden);
+      if (!cards.length) cards = allCards;
+      pictures = cards.map(card => card.querySelector('.pic'));
+      names = cards.map(card => card.querySelector('h3').textContent.trim());
+      tilts = cards.map(() => 0);
+      total = cards.length;
+      allCards.forEach(card => { card.style.visibility = cards.includes(card) ? '' : 'hidden'; });
+    }
+    bind();
     const modulo = (value, size) => ((value % size) + size) % size;
     const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
     let width = 0, step = 0, cycle = 0, position = 0, target = 0, velocity = 0;
@@ -71,10 +85,16 @@
       const denominator = document.createElement('span');
       denominator.textContent = `/ ${total}`;
       count.append(denominator);
-      title.textContent = names[selected];
-      subtitle.textContent = cards[selected].querySelector('.sub').textContent;
-      description.replaceChildren(...[...cards[selected].querySelector('.body').children]
-        .filter(child => child.matches('p, .chips, .card-changelog')).map(child => child.cloneNode(true)));
+      const card = cards[selected];
+      title.innerHTML = card.querySelector('h3').innerHTML;
+      subtitle.textContent = card.querySelector('.sub').textContent;
+      const badge = card.querySelector('.badge');
+      if (kicker) kicker.textContent = badge ? badge.firstChild.textContent.trim() : '';
+      if (presets) presets.textContent = badge?.querySelector('i')?.textContent || '';
+      const changelog = card.querySelector('.card-changelog')?.textContent.trim() || '';
+      if (changelogField) { changelogField.textContent = changelog; changelogSection.hidden = !changelog; }
+      if (descriptionField) descriptionField.textContent = card.querySelector('.body > p')?.textContent || '';
+      if (chipsField) chipsField.replaceChildren(...[...card.querySelectorAll('.chips .chip:not(.more)')].map(chip => { const copy = chip.cloneNode(true); copy.hidden = false; return copy; }));
       if (announce) announcement.textContent = `${selected + 1} of ${total}: ${names[selected]}`;
     }
 
@@ -279,6 +299,12 @@
     reducedMotion.addEventListener('change', () => { if (reducedMotion.matches) measure(); });
     document.addEventListener('visibilitychange', () => { if (document.hidden) measure(); });
     select(0, false);
+    root.refresh = function () {
+      bind();
+      allCards.forEach(card => { card.style.removeProperty('transform'); card.querySelector('.pic').style.removeProperty('transform'); });
+      selected = 0; position = target = 0;
+      select(0, false); measure();
+    };
     function changeView(next) {
       onMove();
       view=next;root.dataset.view=view;
@@ -287,8 +313,8 @@
       viewport.setAttribute('aria-label',view==='reel'?'Plugin gallery. Drag or use the left and right arrow keys.':'Plugin collection');
       meta.hidden=view==='grid';
       document.querySelectorAll('[data-gallery-view]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.galleryView===view)));
-      cards.forEach((card,i)=>{card.querySelector('img').sizes=view==='grid'?gridSizes[i]:'(max-width:900px) 90vw, 740px';card.style.removeProperty('transform');card.style.removeProperty('visibility');card.querySelector('.pic').style.removeProperty('transform');});
-      select(selected,false);measure();
+      allCards.forEach((card,i)=>{card.querySelector('img').sizes=view==='grid'?gridSizes[i]:'(max-width:900px) 90vw, 740px';card.style.removeProperty('transform');card.style.removeProperty('visibility');card.querySelector('.pic').style.removeProperty('transform');});
+      bind();select(Math.min(selected,total-1),false);measure();
     }
     document.querySelectorAll('[data-gallery-view]').forEach(button=>button.addEventListener('click',()=>changeView(button.dataset.galleryView)));
     changeView('grid');
