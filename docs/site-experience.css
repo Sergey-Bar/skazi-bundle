@@ -672,3 +672,8 @@ html,body,#site-intro{background:var(--bg)}
 /* No edge overlays on the portrait: the old gradient frame was a shade lighter than the backdrop. */
 .hero .artist-shot::before,.hero .artist-shot::after{display:none}
 .hero .artist-shot .artist-image{filter:none}
+/* A short red rule under each artist name, echoing the ring in the logo. */
+.persona-caption b{position:relative;padding-bottom:9px}
+.persona-caption b::after{content:"";position:absolute;left:0;bottom:0;width:28px;height:2px;border-radius:1px;background:var(--acid)}
+.persona-zone-asher .persona-caption b::after{left:auto;right:0}
+.persona-caption small{margin-top:1px}
