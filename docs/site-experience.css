@@ -684,3 +684,8 @@ html,body,#site-intro{background:var(--bg)}
 .persona-zone .persona-caption{align-items:center;text-align:center}
 .persona-zone-asher .persona-caption{align-items:center}
 .persona-caption b::after,.persona-zone-asher .persona-caption b::after{left:50%;right:auto;transform:translateX(-50%)}
+/* Scroll cue: a true circle, no leftover ring or glow behind it. */
+.hero-wave{width:48px;height:48px;overflow:visible;background:none}
+.hero-wave::before,.hero-wave-arrow::before,.hero-wave-arrow::after{display:none}
+.hero-wave-arrow{position:relative;width:48px;height:48px;box-shadow:none;animation:none}
+.hero-wave-arrow svg{animation:none}
