@@ -167,8 +167,13 @@
       };
       figure.textContent='0';
       requestAnimationFrame(step);
+      setTimeout(()=>{figure.textContent=format(target);},duration+120);
     });
     const html=document.documentElement;
+    if(document.visibilityState!=='visible'){
+      figures.forEach(figure=>{figure.textContent=format(Number(figure.dataset.count));});
+      return;
+    }
     if(html.classList.contains('intro-pending')){
       const watcher=new MutationObserver(()=>{if(!html.classList.contains('intro-pending')){watcher.disconnect();run();}});
       watcher.observe(html,{attributes:true,attributeFilter:['class']});

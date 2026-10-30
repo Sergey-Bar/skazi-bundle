@@ -617,3 +617,12 @@ button{font-family:inherit}
 .gallery-view button{min-height:44px}
 .plugin-dialog-panel:focus-visible{outline:2px solid #fff;outline-offset:-2px}
 @media(max-width:700px){.site-nav .wrap{height:56px}.daw-icons li{width:44px;height:44px;flex-basis:44px}.daw-icons{gap:8px}}
+/* Close controls: one consistent style. Text pills in the guide and plugin dialog, round icon buttons in the chooser and notice. */
+.info-close,.lb-close{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-width:0;min-height:44px;padding:0 16px 0 18px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(255,255,255,.04);color:#f2f2f2;font:600 12px/1 Inter,sans-serif;letter-spacing:.04em;white-space:nowrap;cursor:pointer;transition:background .18s,border-color .18s}
+.info-close:hover,.lb-close:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.35)}
+.info-close:focus-visible,.lb-close:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.close-symbol{font:400 18px/1 Inter,sans-serif;letter-spacing:0;opacity:.9}
+.os-chooser-close,.dl-toast-close{width:40px;height:40px;margin:0;border:1px solid rgba(255,255,255,.18);border-radius:50%;background:rgba(255,255,255,.04);color:#f2f2f2;font:400 20px/1 Inter,sans-serif;cursor:pointer;transition:background .18s,border-color .18s}
+.os-chooser-close:hover,.dl-toast-close:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.35);color:#fff}
+.dl-toast-close{margin:-4px -6px 0 0}
+.os-chooser-close{width:44px;height:44px}
